@@ -24,11 +24,11 @@ fun NavGraph() {
         }
 
         composable(Screen.Login.route) {
-            LoginScreen()
+            LoginScreen(navController)
         }
 
         composable(Screen.Register.route) {
-            RegisterScreen()
+            RegisterScreen(navController)
         }
 
         composable(Screen.Dashboard.route) {
