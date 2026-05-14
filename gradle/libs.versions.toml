@@ -10,6 +10,7 @@ appcompat = "1.7.1"
 #activity = "1.13.0"
 constraintlayout = "2.2.1"
 
+
 #
 #material = "1.11.0"
 #activity = "1.9.0"
@@ -47,6 +48,7 @@ firebaseBom = "33.1.0"
 
 # Security
 securityCrypto = "1.1.0-alpha06"
+#material3Android = "1.2.1"
 
 [libraries]
 #androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -109,7 +111,8 @@ firebase-auth = { module = "com.google.firebase:firebase-auth" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
-
+#androidx-material3-android = { group = "androidx.compose.material3", name = "material3-android", version.ref = "material3Android" }
+androidx-material3 = { module = "androidx.compose.material3:material3" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
