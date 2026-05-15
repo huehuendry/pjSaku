@@ -4,10 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.hendry.saku.navigation.ui.auth.LoginScreen
-import com.hendry.saku.navigation.ui.auth.RegisterScreen
-import com.hendry.saku.navigation.ui.dashboard.DashboardScreen
-import com.hendry.saku.navigation.ui.splash.SplashScreen
+import com.hendry.saku.ui.auth.LoginScreen
+import com.hendry.saku.ui.auth.RegisterScreen
+import com.hendry.saku.ui.dashboard.DashboardScreen
+import com.hendry.saku.ui.splash.SplashScreen
 
 @Composable
 fun NavGraph() {
@@ -32,7 +32,7 @@ fun NavGraph() {
         }
 
         composable(Screen.Dashboard.route) {
-            DashboardScreen()
+            DashboardScreen(navController)
         }
     }
 }

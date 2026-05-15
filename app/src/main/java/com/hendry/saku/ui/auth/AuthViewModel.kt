@@ -1,4 +1,4 @@
-package com.hendry.saku.navigation.ui.auth
+package com.hendry.saku.ui.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

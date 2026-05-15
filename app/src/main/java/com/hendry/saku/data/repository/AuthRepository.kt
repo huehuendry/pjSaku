@@ -36,6 +36,10 @@ class AuthRepository @Inject constructor(
         return firebaseAuth.currentUser != null
     }
 
+    fun getCurrentUserEmail(): String? {
+        return firebaseAuth.currentUser?.email
+    }
+
     fun logout() {
         firebaseAuth.signOut()
     }
