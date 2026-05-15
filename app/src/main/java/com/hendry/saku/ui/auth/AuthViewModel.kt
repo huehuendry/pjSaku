@@ -39,12 +39,20 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun register(email: String, password: String) {
+    fun register(
+        name: String,
+        email: String,
+        password: String
+    ) {
         viewModelScope.launch {
             try {
                 _uiState.value = AuthUiState(isLoading = true)
 
-                repository.register(email, password)
+                repository.register(
+                    name = name,
+                    email = email,
+                    password = password
+                )
 
                 _uiState.value = AuthUiState(isSuccess = true)
             } catch (e: Exception) {

@@ -170,6 +170,7 @@ fun RegisterScreen(
 
                 if (localError == null) {
                     viewModel.register(
+                        name = name,
                         email = email,
                         password = password
                     )
