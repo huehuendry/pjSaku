@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.hendry.saku.navigation.Screen
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 
 @Composable
 fun DashboardScreen(
@@ -29,7 +31,9 @@ fun DashboardScreen(
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
 
-    val userEmail = viewModel.getUserEmail()
+//    val userEmail = viewModel.getUserEmail()
+    val uiState by viewModel.uiState.collectAsState()
+    val user = uiState.user
 
     Column(
         modifier = Modifier
@@ -38,7 +42,11 @@ fun DashboardScreen(
     ) {
 
         Text(
-            text = "Halo, $userEmail",
+            text =
+            if (uiState.isLoading)
+                "Loading..."
+            else
+                "Halo, ${user?.name}",
             style = MaterialTheme.typography.headlineMedium
         )
 
@@ -70,7 +78,7 @@ fun DashboardScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "Rp 10.000.000",
+                    text = "Rp ${user?.balance}",
                     color = MaterialTheme.colorScheme.onPrimary,
                     style = MaterialTheme.typography.headlineMedium
                 )
@@ -78,7 +86,7 @@ fun DashboardScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "No. Rekening: 1234567890",
+                    "No. Rekening: ${user?.accountNumber}",
                     color = MaterialTheme.colorScheme.onPrimary,
                     style = MaterialTheme.typography.bodySmall
                 )
