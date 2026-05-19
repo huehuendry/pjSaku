@@ -1,5 +1,6 @@
 package com.hendry.saku.ui.auth
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hendry.saku.data.repository.AuthRepository
@@ -7,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import javax.inject.Inject
 
 data class AuthUiState(
@@ -28,11 +30,25 @@ class AuthViewModel @Inject constructor(
             try {
                 _uiState.value = AuthUiState(isLoading = true)
 
-                repository.login(email, password)
+                Log.d("LOGIN_TEST", "Start login")
+
+                withTimeout(15000) {
+
+                    repository.login(
+                        email,
+                        password
+                    )
+                }
+
+                Log.d("LOGIN_TEST", "Login success")
 
                 _uiState.value = AuthUiState(isSuccess = true)
+
             } catch (e: Exception) {
+                Log.e("LOGIN_TEST", "Login failed: ${e.message}")
+
                 _uiState.value = AuthUiState(
+                    isLoading = false,
                     errorMessage = e.message ?: "Login gagal"
                 )
             }

@@ -33,6 +33,12 @@ fun LoginScreen(
 
     val uiState by viewModel.uiState.collectAsState()
 
+    var localError by remember {
+        mutableStateOf<String?>(null)
+    }
+    val errorMessage =
+        localError ?: uiState.errorMessage
+
     LaunchedEffect(uiState.isSuccess) {
 
         if (uiState.isSuccess) {
@@ -140,10 +146,26 @@ fun LoginScreen(
 
             onClick = {
 
-                viewModel.login(
-                    email = email,
-                    password = password
-                )
+                when {
+
+                    email.isBlank() -> {
+                        localError = "Email tidak boleh kosong"
+                    }
+
+                    password.isBlank() -> {
+                        localError = "Password tidak boleh kosong"
+                    }
+
+                    else -> {
+
+                        localError = null
+
+                        viewModel.login(
+                            email = email,
+                            password = password
+                        )
+                    }
+                }
             },
 
             modifier = Modifier.fillMaxWidth(),
@@ -161,7 +183,7 @@ fun LoginScreen(
             )
         }
 
-        uiState.errorMessage?.let {
+        errorMessage?.let {
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -170,6 +192,16 @@ fun LoginScreen(
                 color = MaterialTheme.colorScheme.error
             )
         }
+
+//        uiState.errorMessage?.let {
+//
+//            Spacer(modifier = Modifier.height(12.dp))
+//
+//            Text(
+//                text = it,
+//                color = MaterialTheme.colorScheme.error
+//            )
+//        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
