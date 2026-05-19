@@ -9,4 +9,6 @@ sealed class Screen(val route: String) {
     data object Register : Screen("register")
 
     data object Dashboard : Screen("dashboard")
+
+    data object Transfer : Screen("transfer")
 }

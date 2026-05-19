@@ -6,6 +6,7 @@ import com.hendry.saku.data.model.User
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import com.google.firebase.firestore.toObject
+import com.hendry.saku.data.model.Transaction
 
 class AuthRepository @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
@@ -90,6 +91,115 @@ class AuthRepository @Inject constructor(
             .await()
 
         return document.toObject<User>()
+    }
+
+    suspend fun getRecentTransactions(): List<Transaction> {
+
+        val uid = getCurrentUserId() ?: return emptyList()
+
+        val snapshot = firestore
+            .collection("transactions")
+            .whereEqualTo("userId", uid)
+            .limit(5)
+            .get()
+            .await()
+
+        return snapshot.documents.mapNotNull { document ->
+            document.toObject(Transaction::class.java)
+        }
+    }
+
+    suspend fun transferMoney(
+        receiverAccountNumber: String,
+        amount: Long,
+        note: String
+    ) {
+        val senderUid = getCurrentUserId()
+            ?: throw Exception("User belum login")
+
+        val senderRef = firestore
+            .collection("users")
+            .document(senderUid)
+
+        val receiverQuery = firestore
+            .collection("users")
+            .whereEqualTo("accountNumber", receiverAccountNumber)
+            .limit(1)
+            .get()
+            .await()
+
+        val receiverDoc = receiverQuery.documents.firstOrNull()
+            ?: throw Exception("Nomor rekening tujuan tidak ditemukan")
+
+        val receiverRef = receiverDoc.reference
+
+        firestore.runTransaction { transaction ->
+
+            val senderSnapshot = transaction.get(senderRef)
+            val receiverSnapshot = transaction.get(receiverRef)
+
+            val senderBalance =
+                senderSnapshot.getLong("balance") ?: 0L
+
+            val receiverBalance =
+                receiverSnapshot.getLong("balance") ?: 0L
+
+            if (senderBalance < amount) {
+                throw Exception("Saldo tidak mencukupi")
+            }
+
+            transaction.update(
+                senderRef,
+                "balance",
+                senderBalance - amount
+            )
+
+            transaction.update(
+                receiverRef,
+                "balance",
+                receiverBalance + amount
+            )
+
+            val senderTransactionRef =
+                firestore.collection("transactions").document()
+
+            val receiverTransactionRef =
+                firestore.collection("transactions").document()
+
+            val senderTransaction = Transaction(
+                id = senderTransactionRef.id,
+                userId = senderUid,
+                type = "TRANSFER_OUT",
+                title = "Transfer Keluar",
+                description = note.ifBlank {
+                    "Transfer ke $receiverAccountNumber"
+                },
+                amount = amount,
+                createdAt = System.currentTimeMillis()
+            )
+
+            val receiverTransaction = Transaction(
+                id = receiverTransactionRef.id,
+                userId = receiverDoc.id,
+                type = "TRANSFER_IN",
+                title = "Transfer Masuk",
+                description = note.ifBlank {
+                    "Transfer dari ${senderSnapshot.getString("accountNumber")}"
+                },
+                amount = amount,
+                createdAt = System.currentTimeMillis()
+            )
+
+            transaction.set(
+                senderTransactionRef,
+                senderTransaction
+            )
+
+            transaction.set(
+                receiverTransactionRef,
+                receiverTransaction
+            )
+        }.await()
     }
 
     fun logout() {

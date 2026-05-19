@@ -8,6 +8,7 @@ import com.hendry.saku.ui.auth.LoginScreen
 import com.hendry.saku.ui.auth.RegisterScreen
 import com.hendry.saku.ui.dashboard.DashboardScreen
 import com.hendry.saku.ui.splash.SplashScreen
+import com.hendry.saku.ui.transfer.TransferScreen
 
 @Composable
 fun NavGraph() {
@@ -33,6 +34,10 @@ fun NavGraph() {
 
         composable(Screen.Dashboard.route) {
             DashboardScreen(navController)
+        }
+
+        composable(Screen.Transfer.route) {
+            TransferScreen(navController)
         }
     }
 }

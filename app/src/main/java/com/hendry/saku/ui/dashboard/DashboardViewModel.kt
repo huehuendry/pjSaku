@@ -9,10 +9,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.hendry.saku.data.model.Transaction
 
 data class DashboardUiState(
     val isLoading: Boolean = false,
     val user: User? = null,
+    val transactions: List<Transaction> = emptyList(),
     val errorMessage: String? = null
 )
 
@@ -34,7 +36,6 @@ class DashboardViewModel @Inject constructor(
     private fun getUserProfile() {
 
         viewModelScope.launch {
-
             try {
 
                 _uiState.value =
@@ -44,11 +45,13 @@ class DashboardViewModel @Inject constructor(
 
                 val user =
                     repository.getCurrentUserProfile()
+                val transactions =
+                    repository.getRecentTransactions()
 
-                _uiState.value =
-                    DashboardUiState(
-                        user = user
-                    )
+                _uiState.value = DashboardUiState(
+                    user = user,
+                    transactions = transactions
+                )
 
             } catch (e: Exception) {
 

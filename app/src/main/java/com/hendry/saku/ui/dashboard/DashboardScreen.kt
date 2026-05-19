@@ -34,6 +34,7 @@ fun DashboardScreen(
 //    val userEmail = viewModel.getUserEmail()
     val uiState by viewModel.uiState.collectAsState()
     val user = uiState.user
+    val transactions = uiState.transactions
 
     Column(
         modifier = Modifier
@@ -107,7 +108,9 @@ fun DashboardScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Button(
-                onClick = {},
+                onClick = {
+                    navController.navigate(Screen.Transfer.route)
+                },
                 modifier = Modifier.weight(1f)
             ) {
                 Text("Transfer")
@@ -139,17 +142,62 @@ fun DashboardScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        Card(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
+        if (transactions.isEmpty()) {
+
+            Card(
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Transfer Masuk")
-                Text(
-                    text = "+ Rp 500.000",
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = "Belum ada transaksi",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = "Riwayat transaksi akan muncul di sini",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+
+        } else {
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                transactions.forEach { transaction ->
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            Text(
+                                text = transaction.title,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Text(
+                                text = transaction.description,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Text(
+                                text = "Rp ${transaction.amount}",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                }
             }
         }
 
