@@ -9,6 +9,7 @@ import com.hendry.saku.ui.auth.RegisterScreen
 import com.hendry.saku.ui.dashboard.DashboardScreen
 import com.hendry.saku.ui.splash.SplashScreen
 import com.hendry.saku.ui.transfer.TransferScreen
+import com.hendry.saku.ui.receipt.ReceiptScreen
 
 @Composable
 fun NavGraph() {
@@ -38,6 +39,34 @@ fun NavGraph() {
 
         composable(Screen.Transfer.route) {
             TransferScreen(navController)
+        }
+
+        composable(
+            route = Screen.Receipt.route
+        ) { backStackEntry ->
+
+            val amount =
+                backStackEntry.arguments
+                    ?.getString("amount")
+                    ?.toLongOrNull()
+                    ?: 0L
+
+            val receiverAccount =
+                backStackEntry.arguments
+                    ?.getString("receiverAccount")
+                    ?: ""
+
+            val note =
+                backStackEntry.arguments
+                    ?.getString("note")
+                    ?: ""
+
+            ReceiptScreen(
+                navController = navController,
+                amount = amount,
+                receiverAccount = receiverAccount,
+                note = note
+            )
         }
     }
 }

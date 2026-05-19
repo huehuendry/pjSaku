@@ -11,4 +11,16 @@ sealed class Screen(val route: String) {
     data object Dashboard : Screen("dashboard")
 
     data object Transfer : Screen("transfer")
+
+    data object Receipt : Screen(
+        "receipt/{amount}/{receiverAccount}/{note}"
+    ) {
+        fun createRoute(
+            amount: Long,
+            receiverAccount: String,
+            note: String
+        ): String {
+            return "receipt/$amount/$receiverAccount/$note"
+        }
+    }
 }

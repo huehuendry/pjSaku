@@ -40,7 +40,14 @@ fun TransferScreen(
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
-            navController.navigate(Screen.Dashboard.route) {
+
+            navController.navigate(
+                Screen.Receipt.createRoute(
+                    amount = amount.toLongOrNull() ?: 0L,
+                    receiverAccount = accountNumber,
+                    note = note.ifBlank { "-" }
+                )
+            ) {
                 popUpTo(Screen.Transfer.route) {
                     inclusive = true
                 }

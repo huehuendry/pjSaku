@@ -24,6 +24,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.hendry.saku.navigation.Screen
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import com.hendry.saku.utils.toRupiah
+
 
 @Composable
 fun DashboardScreen(
@@ -79,7 +81,7 @@ fun DashboardScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "Rp ${user?.balance}",
+                    text = user?.balance?.toRupiah() ?: "Rp 0",
                     color = MaterialTheme.colorScheme.onPrimary,
                     style = MaterialTheme.typography.headlineMedium
                 )
@@ -192,7 +194,7 @@ fun DashboardScreen(
                             Spacer(modifier = Modifier.height(4.dp))
 
                             Text(
-                                text = "Rp ${transaction.amount}",
+                                text = transaction.amount.toRupiah(),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
