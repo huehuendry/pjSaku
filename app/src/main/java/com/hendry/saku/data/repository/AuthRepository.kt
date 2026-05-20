@@ -7,6 +7,7 @@ import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import com.google.firebase.firestore.toObject
 import com.hendry.saku.data.model.Transaction
+import com.hendry.saku.data.remote.FirestoreCollection
 
 class AuthRepository @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
@@ -55,7 +56,7 @@ class AuthRepository @Inject constructor(
             )
 
             firestore
-                .collection("users")
+                .collection(FirestoreCollection.USERS)
                 .document(firebaseUser.uid)
                 .set(user)
                 .await()
@@ -85,7 +86,7 @@ class AuthRepository @Inject constructor(
         val uid = getCurrentUserId() ?: return null
 
         val document = firestore
-            .collection("users")
+            .collection(FirestoreCollection.USERS)
             .document(uid)
             .get()
             .await()
@@ -98,7 +99,7 @@ class AuthRepository @Inject constructor(
         val uid = getCurrentUserId() ?: return emptyList()
 
         val snapshot = firestore
-            .collection("transactions")
+            .collection(FirestoreCollection.TRANSACTIONS)
             .whereEqualTo("userId", uid)
             .limit(5)
             .get()
@@ -118,11 +119,11 @@ class AuthRepository @Inject constructor(
             ?: throw Exception("User belum login")
 
         val senderRef = firestore
-            .collection("users")
+            .collection(FirestoreCollection.USERS)
             .document(senderUid)
 
         val receiverQuery = firestore
-            .collection("users")
+            .collection(FirestoreCollection.USERS)
             .whereEqualTo("accountNumber", receiverAccountNumber)
             .limit(1)
             .get()
@@ -161,10 +162,10 @@ class AuthRepository @Inject constructor(
             )
 
             val senderTransactionRef =
-                firestore.collection("transactions").document()
+                firestore.collection(FirestoreCollection.TRANSACTIONS).document()
 
             val receiverTransactionRef =
-                firestore.collection("transactions").document()
+                firestore.collection(FirestoreCollection.TRANSACTIONS).document()
 
             val senderTransaction = Transaction(
                 id = senderTransactionRef.id,

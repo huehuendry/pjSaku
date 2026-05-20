@@ -25,7 +25,8 @@ import com.hendry.saku.navigation.Screen
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.hendry.saku.utils.toRupiah
-
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 @Composable
 fun DashboardScreen(
@@ -41,6 +42,7 @@ fun DashboardScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(24.dp)
     ) {
 
@@ -219,5 +221,7 @@ fun DashboardScreen(
         ) {
             Text("Logout")
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
