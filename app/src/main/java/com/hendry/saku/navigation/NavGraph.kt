@@ -43,31 +43,16 @@ fun NavGraph() {
             TransferScreen(navController)
         }
 
-        composable(
-            route = Screen.Receipt.route
-        ) { backStackEntry ->
+        composable(Screen.Receipt.route) { backStackEntry ->
 
-            val amount =
+            val transactionId =
                 backStackEntry.arguments
-                    ?.getString("amount")
-                    ?.toLongOrNull()
-                    ?: 0L
-
-            val receiverAccount =
-                backStackEntry.arguments
-                    ?.getString("receiverAccount")
-                    ?: ""
-
-            val note =
-                backStackEntry.arguments
-                    ?.getString("note")
+                    ?.getString("transactionId")
                     ?: ""
 
             ReceiptScreen(
                 navController = navController,
-                amount = amount,
-                receiverAccount = receiverAccount,
-                note = note
+                transactionId = transactionId
             )
         }
 

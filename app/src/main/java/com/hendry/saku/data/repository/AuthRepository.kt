@@ -114,7 +114,8 @@ class AuthRepository @Inject constructor(
         receiverAccountNumber: String,
         amount: Long,
         note: String
-    ) {
+    ): String {
+
         val senderUid = getCurrentUserId()
             ?: throw Exception("User belum login")
 
@@ -134,6 +135,12 @@ class AuthRepository @Inject constructor(
 
         val receiverRef = receiverDoc.reference
 
+        val senderTransactionRef =
+            firestore.collection(FirestoreCollection.TRANSACTIONS).document()
+
+        val receiverTransactionRef =
+            firestore.collection(FirestoreCollection.TRANSACTIONS).document()
+
         firestore.runTransaction { transaction ->
 
             val senderSnapshot = transaction.get(senderRef)
@@ -149,23 +156,8 @@ class AuthRepository @Inject constructor(
                 throw Exception("Saldo tidak mencukupi")
             }
 
-            transaction.update(
-                senderRef,
-                "balance",
-                senderBalance - amount
-            )
-
-            transaction.update(
-                receiverRef,
-                "balance",
-                receiverBalance + amount
-            )
-
-            val senderTransactionRef =
-                firestore.collection(FirestoreCollection.TRANSACTIONS).document()
-
-            val receiverTransactionRef =
-                firestore.collection(FirestoreCollection.TRANSACTIONS).document()
+            transaction.update(senderRef, "balance", senderBalance - amount)
+            transaction.update(receiverRef, "balance", receiverBalance + amount)
 
             val senderTransaction = Transaction(
                 id = senderTransactionRef.id,
@@ -191,16 +183,11 @@ class AuthRepository @Inject constructor(
                 createdAt = System.currentTimeMillis()
             )
 
-            transaction.set(
-                senderTransactionRef,
-                senderTransaction
-            )
-
-            transaction.set(
-                receiverTransactionRef,
-                receiverTransaction
-            )
+            transaction.set(senderTransactionRef, senderTransaction)
+            transaction.set(receiverTransactionRef, receiverTransaction)
         }.await()
+
+        return senderTransactionRef.id
     }
 
     suspend fun getAllTransactions(): List<Transaction> {

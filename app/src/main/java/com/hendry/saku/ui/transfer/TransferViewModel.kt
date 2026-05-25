@@ -12,6 +12,7 @@ import javax.inject.Inject
 data class TransferUiState(
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
+    val transactionId: String? = null,
     val errorMessage: String? = null
 )
 
@@ -48,13 +49,17 @@ class TransferViewModel @Inject constructor(
                     return@launch
                 }
 
-                repository.transferMoney(
-                    receiverAccountNumber = accountNumber,
-                    amount = amount,
-                    note = note
-                )
+                val transactionId =
+                    repository.transferMoney(
+                        receiverAccountNumber = accountNumber,
+                        amount = amount,
+                        note = note
+                    )
 
-                _uiState.value = TransferUiState(isSuccess = true)
+                _uiState.value = TransferUiState(
+                    isSuccess = true,
+                    transactionId = transactionId
+                )
 
             } catch (e: Exception) {
                 _uiState.value = TransferUiState(

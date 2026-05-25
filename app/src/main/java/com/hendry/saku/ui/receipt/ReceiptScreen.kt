@@ -12,19 +12,29 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.hendry.saku.navigation.Screen
 import com.hendry.saku.utils.toRupiah
+import com.hendry.saku.ui.transactiondetail.TransactionDetailViewModel
 
 @Composable
 fun ReceiptScreen(
     navController: NavController,
-    amount: Long,
-    receiverAccount: String,
-    note: String
+    transactionId: String,
+    viewModel: TransactionDetailViewModel = hiltViewModel(),
 ) {
+
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(transactionId) {
+        viewModel.getTransactionDetail(transactionId)
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -55,15 +65,7 @@ fun ReceiptScreen(
 
                 Text("Nominal")
                 Text(
-                    text = amount.toRupiah(),
-                    style = MaterialTheme.typography.titleMedium
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text("Rekening Tujuan")
-                Text(
-                    text = receiverAccount,
+                    text = uiState.transaction?.amount?.toRupiah()!!,
                     style = MaterialTheme.typography.titleMedium
                 )
 
@@ -71,7 +73,7 @@ fun ReceiptScreen(
 
                 Text("Catatan")
                 Text(
-                    text = note.ifBlank { "-" },
+                    text = uiState.transaction?.description ?: "-",
                     style = MaterialTheme.typography.titleMedium
                 )
             }

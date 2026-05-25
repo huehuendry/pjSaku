@@ -43,9 +43,7 @@ fun TransferScreen(
 
             navController.navigate(
                 Screen.Receipt.createRoute(
-                    amount = amount.toLongOrNull() ?: 0L,
-                    receiverAccount = accountNumber,
-                    note = note.ifBlank { "-" }
+                    uiState.transactionId ?: ""
                 )
             ) {
                 popUpTo(Screen.Transfer.route) {
