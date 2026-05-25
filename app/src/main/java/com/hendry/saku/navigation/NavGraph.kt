@@ -11,6 +11,7 @@ import com.hendry.saku.ui.splash.SplashScreen
 import com.hendry.saku.ui.transfer.TransferScreen
 import com.hendry.saku.ui.receipt.ReceiptScreen
 import com.hendry.saku.ui.history.HistoryScreen
+import com.hendry.saku.ui.transactiondetail.TransactionDetailScreen
 
 @Composable
 fun NavGraph() {
@@ -73,5 +74,19 @@ fun NavGraph() {
         composable(Screen.History.route) {
             HistoryScreen(navController)
         }
+
+        composable(Screen.TransactionDetail.route) { backStackEntry ->
+
+            val transactionId =
+                backStackEntry.arguments
+                    ?.getString("transactionId")
+                    ?: ""
+
+            TransactionDetailScreen(
+                navController = navController,
+                transactionId = transactionId
+            )
+        }
+
     }
 }

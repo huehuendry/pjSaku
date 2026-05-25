@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.hendry.saku.utils.toRupiah
+import androidx.compose.foundation.clickable
+import com.hendry.saku.navigation.Screen
 
 @Composable
 fun HistoryScreen(
@@ -74,7 +76,15 @@ fun HistoryScreen(
                 ) {
                     items(uiState.transactions) { transaction ->
                         Card(
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    navController.navigate(
+                                        Screen.TransactionDetail.createRoute(
+                                            transaction.id
+                                        )
+                                    )
+                                }
                         ) {
                             Column(
                                 modifier = Modifier.padding(16.dp)

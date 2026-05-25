@@ -222,6 +222,19 @@ class AuthRepository @Inject constructor(
             }
     }
 
+    suspend fun getTransactionById(
+        transactionId: String
+    ): Transaction? {
+
+        val document = firestore
+            .collection(FirestoreCollection.TRANSACTIONS)
+            .document(transactionId)
+            .get()
+            .await()
+
+        return document.toObject(Transaction::class.java)
+    }
+
     fun logout() {
         firebaseAuth.signOut()
     }
