@@ -203,6 +203,25 @@ class AuthRepository @Inject constructor(
         }.await()
     }
 
+    suspend fun getAllTransactions(): List<Transaction> {
+
+        val uid = getCurrentUserId() ?: return emptyList()
+
+        val snapshot = firestore
+            .collection(FirestoreCollection.TRANSACTIONS)
+            .whereEqualTo("userId", uid)
+            .get()
+            .await()
+
+        return snapshot.documents
+            .mapNotNull { document ->
+                document.toObject(Transaction::class.java)
+            }
+            .sortedByDescending { transaction ->
+                transaction.createdAt
+            }
+    }
+
     fun logout() {
         firebaseAuth.signOut()
     }

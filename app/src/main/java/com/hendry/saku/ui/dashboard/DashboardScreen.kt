@@ -131,7 +131,9 @@ fun DashboardScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedButton(
-            onClick = {},
+            onClick = {
+                navController.navigate(Screen.History.route)
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Riwayat Transaksi")

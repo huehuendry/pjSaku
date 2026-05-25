@@ -23,4 +23,6 @@ sealed class Screen(val route: String) {
             return "receipt/$amount/$receiverAccount/$note"
         }
     }
+
+    data object History : Screen("history")
 }

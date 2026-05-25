@@ -10,6 +10,7 @@ import com.hendry.saku.ui.dashboard.DashboardScreen
 import com.hendry.saku.ui.splash.SplashScreen
 import com.hendry.saku.ui.transfer.TransferScreen
 import com.hendry.saku.ui.receipt.ReceiptScreen
+import com.hendry.saku.ui.history.HistoryScreen
 
 @Composable
 fun NavGraph() {
@@ -67,6 +68,10 @@ fun NavGraph() {
                 receiverAccount = receiverAccount,
                 note = note
             )
+        }
+
+        composable(Screen.History.route) {
+            HistoryScreen(navController)
         }
     }
 }
