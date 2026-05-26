@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.hendry.saku.navigation.NavGraph
+import com.hendry.saku.ui.theme.SakuTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -19,7 +20,9 @@ class MainActivity : ComponentActivity() {
 
 //        Log.d("HILT_TEST", appName)
         setContent {
-            NavGraph()
+            SakuTheme {
+                NavGraph()
+            }
         }
     }
 }
