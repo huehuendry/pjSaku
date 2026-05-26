@@ -8,6 +8,8 @@ import com.hendry.saku.navigation.NavGraph
 import com.hendry.saku.ui.theme.SakuTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import android.graphics.Color
+import androidx.core.view.WindowCompat
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -18,7 +20,19 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-//        Log.d("HILT_TEST", appName)
+        window.statusBarColor = Color.parseColor("#0F172A")
+        window.navigationBarColor = Color.WHITE
+
+        WindowCompat.getInsetsController(
+            window,
+            window.decorView
+        ).isAppearanceLightStatusBars = false
+
+        WindowCompat.getInsetsController(
+            window,
+            window.decorView
+        ).isAppearanceLightNavigationBars = true
+
         setContent {
             SakuTheme {
                 NavGraph()

@@ -5,5 +5,11 @@
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
 
-    <style name="Theme.Saku" parent="Base.Theme.Saku" />
+<!--    <style name="Theme.Saku" parent="Base.Theme.Saku" />-->
+    <style name="Theme.Saku" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">#0F172A</item>
+        <item name="android:navigationBarColor">#FFFFFF</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
 </resources>
