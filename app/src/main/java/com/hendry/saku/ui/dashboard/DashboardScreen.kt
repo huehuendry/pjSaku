@@ -232,22 +232,6 @@ fun DashboardScreen(
 
         Spacer(modifier = Modifier.height(28.dp))
 
-        OutlinedButton(
-            onClick = {
-                viewModel.logout()
-
-                navController.navigate(Screen.Login.route) {
-                    popUpTo(Screen.Dashboard.route) {
-                        inclusive = true
-                    }
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Logout")
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 

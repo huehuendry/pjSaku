@@ -12,6 +12,10 @@ sealed class Screen(val route: String) {
 
     data object Transfer : Screen("transfer")
 
+    data object History : Screen("history")
+
+    data object Profile : Screen("profile")
+
     data object Receipt :
         Screen("receipt/{transactionId}") {
 
@@ -29,8 +33,5 @@ sealed class Screen(val route: String) {
             return "transaction_detail/$transactionId"
         }
     }
-
-    data object History : Screen("history")
-
 
 }
