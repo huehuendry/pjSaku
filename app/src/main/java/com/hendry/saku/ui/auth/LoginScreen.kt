@@ -1,50 +1,70 @@
 package com.hendry.saku.ui.auth
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import com.hendry.saku.navigation.Screen
-import androidx.compose.foundation.text.ClickableText
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.VisibilityOff
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-
+import androidx.navigation.NavController
+import com.hendry.saku.navigation.Screen
 
 @Composable
 fun LoginScreen(
     navController: NavController,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
-
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var localError by remember { mutableStateOf<String?>(null) }
 
     val uiState by viewModel.uiState.collectAsState()
 
-    var localError by remember {
-        mutableStateOf<String?>(null)
-    }
-    val errorMessage =
-        localError ?: uiState.errorMessage
-
     LaunchedEffect(uiState.isSuccess) {
-
         if (uiState.isSuccess) {
-
             navController.navigate(Screen.Dashboard.route) {
-
                 popUpTo(Screen.Login.route) {
                     inclusive = true
                 }
@@ -54,176 +74,293 @@ fun LoginScreen(
         }
     }
 
-    val annotatedText = buildAnnotatedString {
-
-        append("Belum punya akun? ")
-
-        pushStringAnnotation(
-            tag = "REGISTER",
-            annotation = "register"
-        )
-
-        withStyle(
-            style = SpanStyle(
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold
-            )
-        ) {
-            append("Register")
-        }
-
-        pop()
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .background(Color(0xFFF8FAFC))
             .padding(24.dp),
-
-        verticalArrangement = Arrangement.Center,
-
-        horizontalAlignment = Alignment.CenterHorizontally
+        verticalArrangement = Arrangement.Center
     ) {
 
-        Text(
-            text = "Welcome Back",
-            style = MaterialTheme.typography.headlineMedium
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
 
-        Spacer(modifier = Modifier.height(8.dp))
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                Color(0xFF0F172A),
+                                Color(0xFF1E3A8A)
+                            )
+                        )
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "S",
+                    color = Color.White,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+            }
 
-        Text(
-            text = "Login to your Saku account",
-            style = MaterialTheme.typography.bodyMedium
-        )
+            Column(
+                modifier = Modifier.padding(start = 14.dp)
+            ) {
+                Text(
+                    text = "SAKU",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = Color(0xFF0F172A),
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = "Aman • Mudah • Terpercaya",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color(0xFF64748B)
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        OutlinedTextField(
-            value = email,
+        Text(
+            text = "Selamat Datang",
+            style = MaterialTheme.typography.headlineMedium,
+            color = Color(0xFF0F172A),
+            fontWeight = FontWeight.SemiBold
+        )
 
-            onValueChange = {
-                email = it
-            },
+        Spacer(modifier = Modifier.height(6.dp))
 
-            label = {
-                Text("Email")
-            },
+        Text(
+            text = "Masuk ke akun kamu untuk melanjutkan transaksi.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color(0xFF64748B)
+        )
 
+        Spacer(modifier = Modifier.height(28.dp))
+
+        Card(
             modifier = Modifier.fillMaxWidth(),
-
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Email
+            shape = RoundedCornerShape(28.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White
             ),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 6.dp
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(22.dp)
+            ) {
 
-            singleLine = true
-        )
+                Text(
+                    text = "Login",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = Color(0xFF0F172A),
+                    fontWeight = FontWeight.SemiBold
+                )
 
-        Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
-        OutlinedTextField(
-            value = password,
+                Text(
+                    text = "Gunakan email dan password yang terdaftar.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color(0xFF64748B)
+                )
 
-            onValueChange = {
-                password = it
-            },
+                Spacer(modifier = Modifier.height(22.dp))
 
-            label = {
-                Text("Password")
-            },
+                SakuLoginTextField(
+                    value = email,
+                    onValueChange = {
+                        email = it
+                        localError = null
+                    },
+                    label = "Email",
+                    placeholder = "contoh@email.com",
+                    keyboardType = KeyboardType.Email
+                )
 
-            modifier = Modifier.fillMaxWidth(),
+                Spacer(modifier = Modifier.height(18.dp))
 
-            visualTransformation =
-            PasswordVisualTransformation(),
+                SakuLoginTextField(
+                    value = password,
+                    onValueChange = {
+                        password = it
+                        localError = null
+                    },
+                    label = "Password",
+                    placeholder = "Masukkan password",
+                    keyboardType = KeyboardType.Password,
+                    isPassword = true,
+                    passwordVisible = passwordVisible,
+                    onPasswordVisibilityChange = {
+                        passwordVisible = !passwordVisible
+                    }
+                )
+            }
+        }
 
-            singleLine = true
-        )
+        Spacer(modifier = Modifier.height(18.dp))
 
-        Spacer(modifier = Modifier.height(24.dp))
+        val errorMessage = localError ?: uiState.errorMessage
+
+        errorMessage?.let {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFFFEECEC)
+                )
+            ) {
+                Text(
+                    text = it,
+                    modifier = Modifier.padding(16.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color(0xFFDC2626)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
         Button(
-
             onClick = {
+                localError = when {
+                    email.isBlank() -> "Email tidak boleh kosong"
+                    password.isBlank() -> "Password tidak boleh kosong"
+                    else -> null
+                }
 
-                when {
-
-                    email.isBlank() -> {
-                        localError = "Email tidak boleh kosong"
-                    }
-
-                    password.isBlank() -> {
-                        localError = "Password tidak boleh kosong"
-                    }
-
-                    else -> {
-
-                        localError = null
-
-                        viewModel.login(
-                            email = email,
-                            password = password
-                        )
-                    }
+                if (localError == null) {
+                    viewModel.login(
+                        email = email,
+                        password = password
+                    )
                 }
             },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp),
+            shape = RoundedCornerShape(16.dp),
+            enabled = !uiState.isLoading,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF10B981),
+                contentColor = Color.White,
+                disabledContainerColor = Color(0xFF10B981).copy(alpha = 0.45f),
+                disabledContentColor = Color.White
+            )
+        ) {
+            Text(
+                text = if (uiState.isLoading) {
+                    "Memproses..."
+                } else {
+                    "Login"
+                },
+                fontWeight = FontWeight.SemiBold
+            )
+        }
 
+        Spacer(modifier = Modifier.height(22.dp))
+
+        Row(
             modifier = Modifier.fillMaxWidth(),
-
-            enabled = !uiState.isLoading
-
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
         ) {
 
             Text(
-                text =
-                if (uiState.isLoading)
-                    "Loading..."
-                else
-                    "Login"
+                text = "Belum punya akun? ",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color(0xFF64748B)
             )
-        }
-
-        errorMessage?.let {
-
-            Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = it,
-                color = MaterialTheme.colorScheme.error
+                text = "Register",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color(0xFF10B981),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable {
+                    navController.navigate(Screen.Register.route)
+                }
             )
         }
-
-//        uiState.errorMessage?.let {
-//
-//            Spacer(modifier = Modifier.height(12.dp))
-//
-//            Text(
-//                text = it,
-//                color = MaterialTheme.colorScheme.error
-//            )
-//        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        ClickableText(
-            text = annotatedText,
-
-            onClick = { offset ->
-
-                annotatedText
-                    .getStringAnnotations(
-                        tag = "REGISTER",
-                        start = offset,
-                        end = offset
-                    )
-                    .firstOrNull()
-                    ?.let {
-
-                        navController.navigate(
-                            Screen.Register.route
-                        )
-                    }
-            }
-        )
     }
+}
+
+@Composable
+private fun SakuLoginTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    placeholder: String,
+    keyboardType: KeyboardType,
+    isPassword: Boolean = false,
+    passwordVisible: Boolean = false,
+    onPasswordVisibilityChange: (() -> Unit)? = null
+) {
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = {
+            Text(label)
+        },
+        placeholder = {
+            Text(placeholder)
+        },
+        modifier = Modifier.fillMaxWidth(),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = keyboardType
+        ),
+        singleLine = true,
+        visualTransformation = if (isPassword && !passwordVisible) {
+            PasswordVisualTransformation()
+        } else {
+            VisualTransformation.None
+        },
+        trailingIcon = if (isPassword) {
+            {
+                IconButton(
+                    onClick = {
+                        onPasswordVisibilityChange?.invoke()
+                    }
+                ) {
+                    Icon(
+                        imageVector = if (passwordVisible) {
+                            Icons.Rounded.VisibilityOff
+                        } else {
+                            Icons.Rounded.Visibility
+                        },
+                        contentDescription = "Toggle password visibility",
+                        tint = Color(0xFF64748B)
+                    )
+                }
+            }
+        } else {
+            null
+        },
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+            disabledContainerColor = Color.Transparent,
+
+            focusedIndicatorColor = Color(0xFF10B981),
+            unfocusedIndicatorColor = Color(0xFFE2E8F0),
+
+            focusedLabelColor = Color(0xFF10B981),
+            unfocusedLabelColor = Color(0xFF64748B),
+
+            focusedTextColor = Color(0xFF0F172A),
+            unfocusedTextColor = Color(0xFF0F172A),
+
+            cursorColor = Color(0xFF10B981)
+        )
+    )
 }
