@@ -25,6 +25,18 @@ import com.hendry.saku.ui.profile.ProfileScreen
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.height
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.height
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AccountCircle
+import androidx.compose.material.icons.rounded.History
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBarDefaults
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
+
 
 @Composable
 fun NavGraph() {
@@ -122,42 +134,82 @@ private fun SakuBottomNavigation(
     val items = listOf(
         BottomNavItem(
             label = "Home",
-            route = Screen.Dashboard.route
+            route = Screen.Dashboard.route,
+            icon = Icons.Rounded.Home
         ),
         BottomNavItem(
             label = "History",
-            route = Screen.History.route
+            route = Screen.History.route,
+            icon = Icons.Rounded.History
         ),
         BottomNavItem(
             label = "Akun",
-            route = Screen.Profile.route
+            route = Screen.Profile.route,
+            icon = Icons.Rounded.AccountCircle
         )
     )
 
     NavigationBar(
         modifier = Modifier.height(64.dp),
-        windowInsets = WindowInsets(0.dp)
+        windowInsets = WindowInsets(0.dp),
+        containerColor = MaterialTheme.colorScheme.surface,
+        tonalElevation = NavigationBarDefaults.Elevation
     ) {
         items.forEach { item ->
 
+            val isSelected = currentRoute == item.route
+
             NavigationBarItem(
-                selected = currentRoute == item.route,
+                selected = isSelected,
                 onClick = {
                     if (currentRoute != item.route) {
-                        navController.navigate(item.route) {
-                            popUpTo(Screen.Dashboard.route) {
-                                saveState = true
+
+                        if (item.route == Screen.Dashboard.route) {
+
+                            val popped = navController.popBackStack(
+                                route = Screen.Dashboard.route,
+                                inclusive = false
+                            )
+
+                            if (!popped) {
+                                navController.navigate(Screen.Dashboard.route) {
+                                    launchSingleTop = true
+                                }
                             }
 
-                            launchSingleTop = true
-                            restoreState = true
+                        } else {
+
+                            navController.navigate(item.route) {
+                                popUpTo(Screen.Dashboard.route) {
+                                    saveState = true
+                                }
+
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                         }
                     }
                 },
-                icon = {},
+                icon = {
+                    Icon(
+                        imageVector = item.icon,
+                        contentDescription = item.label
+                    )
+                },
                 label = {
-                    Text(item.label)
-                }
+                    Text(
+                        text = item.label,
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                },
+                alwaysShowLabel = true,
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                    indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f)
+                )
             )
         }
     }
@@ -165,5 +217,6 @@ private fun SakuBottomNavigation(
 
 private data class BottomNavItem(
     val label: String,
-    val route: String
+    val route: String,
+    val icon: ImageVector
 )

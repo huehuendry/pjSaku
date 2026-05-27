@@ -72,6 +72,7 @@ dependencies {
 
     // Material
     implementation(libs.android.material)
+    implementation(libs.androidx.material.icons.extended)
 
     // Navigation
     implementation(libs.androidx.navigation.compose)
@@ -113,4 +114,6 @@ dependencies {
     implementation(libs.firebase.messaging)
 
     implementation(libs.kotlinx.coroutines.play.services)
+
+
 }
