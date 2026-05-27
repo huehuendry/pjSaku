@@ -146,6 +146,12 @@ class AuthRepository @Inject constructor(
             val senderSnapshot = transaction.get(senderRef)
             val receiverSnapshot = transaction.get(receiverRef)
 
+            val senderAccountNumber =
+                senderSnapshot.getString("accountNumber") ?: "-"
+
+            val receiverAccountNumberValue =
+                receiverSnapshot.getString("accountNumber") ?: receiverAccountNumber
+
             val senderBalance =
                 senderSnapshot.getLong("balance") ?: 0L
 
@@ -164,10 +170,11 @@ class AuthRepository @Inject constructor(
                 userId = senderUid,
                 type = "TRANSFER_OUT",
                 title = "Transfer Keluar",
-                description = note.ifBlank {
-                    "Transfer ke $receiverAccountNumber"
-                },
+                description = "Transfer ke $receiverAccountNumberValue",
                 amount = amount,
+                senderAccountNumber = senderAccountNumber,
+                receiverAccountNumber = receiverAccountNumberValue,
+                note = note,
                 createdAt = System.currentTimeMillis()
             )
 
@@ -176,10 +183,11 @@ class AuthRepository @Inject constructor(
                 userId = receiverDoc.id,
                 type = "TRANSFER_IN",
                 title = "Transfer Masuk",
-                description = note.ifBlank {
-                    "Transfer dari ${senderSnapshot.getString("accountNumber")}"
-                },
+                description = "Transfer dari $senderAccountNumber",
                 amount = amount,
+                senderAccountNumber = senderAccountNumber,
+                receiverAccountNumber = receiverAccountNumberValue,
+                note = note,
                 createdAt = System.currentTimeMillis()
             )
 
