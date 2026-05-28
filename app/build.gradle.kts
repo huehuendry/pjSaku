@@ -115,5 +115,9 @@ dependencies {
 
     implementation(libs.kotlinx.coroutines.play.services)
 
+    testImplementation(libs.junit)
+    testImplementation(libs.androidx.arch.core.testing)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
 
 }
