@@ -19,6 +19,7 @@ This project was developed to explore modern Android development practices such 
 - MVVM Architecture
 - Repository Pattern
 - Hilt Dependency Injection
+- Unit Testing
 
 ## Tech Stack
 
