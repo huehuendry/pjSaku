@@ -28,11 +28,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.hendry.saku.navigation.Screen
+import com.hendry.saku.notification.NotificationHelper
+import com.hendry.saku.utils.format.toRupiah
 
 @Composable
 fun TransferScreen(
@@ -44,13 +47,22 @@ fun TransferScreen(
     var note by remember { mutableStateOf("") }
 
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
     LaunchedEffect(uiState.isSuccess, uiState.transactionId) {
-        if (uiState.isSuccess && !uiState.transactionId.isNullOrBlank()) {
+        val transactionId = uiState.transactionId
+
+        if (uiState.isSuccess && !transactionId.isNullOrBlank()) {
+            val amountText = amount.toLongOrNull()?.toRupiah() ?: "Rp0"
+
+            NotificationHelper.showTransferSuccessNotification(
+                context = context,
+                amountText = amountText,
+                transactionId = transactionId
+            )
+
             navController.navigate(
-                Screen.Receipt.createRoute(
-                    uiState.transactionId.orEmpty()
-                )
+                Screen.Receipt.createRoute(transactionId)
             ) {
                 popUpTo(Screen.Transfer.route) {
                     inclusive = true
