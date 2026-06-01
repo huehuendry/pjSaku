@@ -56,8 +56,12 @@ junit = "4.13.2"
 archCoreTesting = "2.2.0"
 mockitoCore = "5.12.0"
 mockitoKotlin = "5.4.0"
+androidxJunit = "1.2.1"
 
 [libraries]
+
+androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 
 androidx-arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "archCoreTesting" }
 mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockitoCore" }

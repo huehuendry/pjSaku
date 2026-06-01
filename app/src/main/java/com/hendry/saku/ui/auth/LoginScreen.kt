@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -49,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.hendry.saku.navigation.Screen
+import com.hendry.saku.utils.LoginValidator
 
 @Composable
 fun LoginScreen(
@@ -74,6 +76,57 @@ fun LoginScreen(
         }
     }
 
+    LoginContent(
+        email = email,
+        password = password,
+        passwordVisible = passwordVisible,
+        errorMessage = localError ?: uiState.errorMessage,
+        isLoading = uiState.isLoading,
+        onEmailChange = {
+            email = it
+            localError = null
+        },
+        onPasswordChange = {
+            password = it
+            localError = null
+        },
+        onPasswordVisibilityChange = {
+            passwordVisible = !passwordVisible
+        },
+        onLoginClick = {
+            val validationError = LoginValidator.validateLogin(
+                email = email,
+                password = password
+            )
+
+            localError = validationError
+
+            if (validationError == null) {
+                viewModel.login(
+                    email = email,
+                    password = password
+                )
+            }
+        },
+        onRegisterClick = {
+            navController.navigate(Screen.Register.route)
+        }
+    )
+}
+
+@Composable
+fun LoginContent(
+    email: String,
+    password: String,
+    passwordVisible: Boolean,
+    errorMessage: String?,
+    isLoading: Boolean,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onPasswordVisibilityChange: () -> Unit,
+    onLoginClick: () -> Unit,
+    onRegisterClick: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -179,42 +232,36 @@ fun LoginScreen(
 
                 SakuLoginTextField(
                     value = email,
-                    onValueChange = {
-                        email = it
-                        localError = null
-                    },
+                    onValueChange = onEmailChange,
                     label = "Email",
                     placeholder = "contoh@email.com",
-                    keyboardType = KeyboardType.Email
+                    keyboardType = KeyboardType.Email,
+                    modifier = Modifier.testTag("emailField")
                 )
 
                 Spacer(modifier = Modifier.height(18.dp))
 
                 SakuLoginTextField(
                     value = password,
-                    onValueChange = {
-                        password = it
-                        localError = null
-                    },
+                    onValueChange = onPasswordChange,
                     label = "Password",
                     placeholder = "Masukkan password",
                     keyboardType = KeyboardType.Password,
+                    modifier = Modifier.testTag("passwordField"),
                     isPassword = true,
                     passwordVisible = passwordVisible,
-                    onPasswordVisibilityChange = {
-                        passwordVisible = !passwordVisible
-                    }
+                    onPasswordVisibilityChange = onPasswordVisibilityChange
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(18.dp))
 
-        val errorMessage = localError ?: uiState.errorMessage
-
         errorMessage?.let {
             Card(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("loginErrorCard"),
                 shape = RoundedCornerShape(18.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = Color(0xFFFEECEC)
@@ -232,25 +279,13 @@ fun LoginScreen(
         }
 
         Button(
-            onClick = {
-                localError = when {
-                    email.isBlank() -> "Email tidak boleh kosong"
-                    password.isBlank() -> "Password tidak boleh kosong"
-                    else -> null
-                }
-
-                if (localError == null) {
-                    viewModel.login(
-                        email = email,
-                        password = password
-                    )
-                }
-            },
+            onClick = onLoginClick,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(52.dp),
+                .height(52.dp)
+                .testTag("loginButton"),
             shape = RoundedCornerShape(16.dp),
-            enabled = !uiState.isLoading,
+            enabled = !isLoading,
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF10B981),
                 contentColor = Color.White,
@@ -259,7 +294,7 @@ fun LoginScreen(
             )
         ) {
             Text(
-                text = if (uiState.isLoading) {
+                text = if (isLoading) {
                     "Memproses..."
                 } else {
                     "Login"
@@ -287,9 +322,11 @@ fun LoginScreen(
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color(0xFF10B981),
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.clickable {
-                    navController.navigate(Screen.Register.route)
-                }
+                modifier = Modifier
+                    .clickable {
+                        onRegisterClick()
+                    }
+                    .testTag("registerText")
             )
         }
     }
@@ -302,6 +339,7 @@ private fun SakuLoginTextField(
     label: String,
     placeholder: String,
     keyboardType: KeyboardType,
+    modifier: Modifier = Modifier,
     isPassword: Boolean = false,
     passwordVisible: Boolean = false,
     onPasswordVisibilityChange: (() -> Unit)? = null
@@ -315,7 +353,7 @@ private fun SakuLoginTextField(
         placeholder = {
             Text(placeholder)
         },
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         keyboardOptions = KeyboardOptions(
             keyboardType = keyboardType
         ),
@@ -330,7 +368,8 @@ private fun SakuLoginTextField(
                 IconButton(
                     onClick = {
                         onPasswordVisibilityChange?.invoke()
-                    }
+                    },
+                    modifier = Modifier.testTag("passwordToggle")
                 ) {
                     Icon(
                         imageVector = if (passwordVisible) {
@@ -338,7 +377,11 @@ private fun SakuLoginTextField(
                         } else {
                             Icons.Rounded.Visibility
                         },
-                        contentDescription = "Toggle password visibility",
+                        contentDescription = if (passwordVisible) {
+                            "Hide password"
+                        } else {
+                            "Show password"
+                        },
                         tint = Color(0xFF64748B)
                     )
                 }
