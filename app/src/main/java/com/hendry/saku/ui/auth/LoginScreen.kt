@@ -51,6 +51,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.hendry.saku.navigation.Screen
 import com.hendry.saku.utils.validator.LoginValidator
+import com.hendry.saku.notification.FcmTokenManager
 
 @Composable
 fun LoginScreen(
@@ -66,6 +67,8 @@ fun LoginScreen(
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
+            FcmTokenManager.syncTokenForCurrentUser()
+
             navController.navigate(Screen.Dashboard.route) {
                 popUpTo(Screen.Login.route) {
                     inclusive = true

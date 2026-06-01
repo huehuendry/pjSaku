@@ -10,12 +10,19 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import android.graphics.Color
 import androidx.core.view.WindowCompat
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-//    @Inject
-//    lateinit var appName: String
+    private val requestNotificationPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,9 +40,26 @@ class MainActivity : ComponentActivity() {
             window.decorView
         ).isAppearanceLightNavigationBars = true
 
+        requestNotificationPermission()
+
         setContent {
             SakuTheme {
                 NavGraph()
+            }
+        }
+    }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val permission = Manifest.permission.POST_NOTIFICATIONS
+
+            val isGranted = ContextCompat.checkSelfPermission(
+                this,
+                permission
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (!isGranted) {
+                requestNotificationPermissionLauncher.launch(permission)
             }
         }
     }
