@@ -1,4 +1,4 @@
-package com.hendry.saku.utils
+package com.hendry.saku.utils.format
 
 import java.text.NumberFormat
 import java.util.Locale

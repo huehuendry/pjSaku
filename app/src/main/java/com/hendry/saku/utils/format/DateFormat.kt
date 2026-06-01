@@ -1,4 +1,4 @@
-package com.hendry.saku.utils
+package com.hendry.saku.utils.format
 
 import java.text.SimpleDateFormat
 import java.util.Date

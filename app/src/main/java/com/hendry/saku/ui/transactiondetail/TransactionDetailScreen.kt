@@ -28,8 +28,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.hendry.saku.utils.toReadableDate
-import com.hendry.saku.utils.toRupiah
+import com.hendry.saku.utils.format.toReadableDate
+import com.hendry.saku.utils.format.toRupiah
 
 @Composable
 fun TransactionDetailScreen(

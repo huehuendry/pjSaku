@@ -1,4 +1,4 @@
-package com.hendry.saku.utils
+package com.hendry.saku.utils.validator
 
 object TransferValidator {
 

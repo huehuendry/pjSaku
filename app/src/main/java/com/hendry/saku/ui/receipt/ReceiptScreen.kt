@@ -32,8 +32,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.hendry.saku.navigation.Screen
 import com.hendry.saku.ui.transactiondetail.TransactionDetailViewModel
-import com.hendry.saku.utils.toReadableDate
-import com.hendry.saku.utils.toRupiah
+import com.hendry.saku.utils.format.toReadableDate
+import com.hendry.saku.utils.format.toRupiah
 
 @Composable
 fun ReceiptScreen(
