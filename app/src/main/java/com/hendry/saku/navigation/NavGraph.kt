@@ -36,12 +36,30 @@ import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-
+import androidx.compose.runtime.LaunchedEffect
 
 @Composable
-fun NavGraph() {
+fun NavGraph(
+    pendingTransactionId: String? = null,
+    onPendingTransactionHandled: () -> Unit = {}
+) {
 
     val navController = rememberNavController()
+
+    LaunchedEffect(pendingTransactionId) {
+        val transactionId = pendingTransactionId
+
+        if (!transactionId.isNullOrBlank()) {
+            navController.navigate(
+                Screen.TransactionDetail.createRoute(transactionId)
+            ) {
+                launchSingleTop = true
+            }
+
+            onPendingTransactionHandled()
+        }
+    }
+
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route

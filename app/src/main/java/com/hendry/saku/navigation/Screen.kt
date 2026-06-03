@@ -28,7 +28,6 @@ sealed class Screen(val route: String) {
     }
 
     data object TransactionDetail : Screen("transaction_detail/{transactionId}") {
-
         fun createRoute(transactionId: String): String {
             return "transaction_detail/$transactionId"
         }

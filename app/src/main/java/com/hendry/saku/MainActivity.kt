@@ -15,14 +15,27 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import android.content.Intent
+import androidx.activity.compose.setContent
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import com.hendry.saku.navigation.NavGraph
+import com.hendry.saku.notification.NotificationHelper
+import com.hendry.saku.ui.theme.SakuTheme
+
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private var pendingTransactionId by mutableStateOf<String?>(null)
 
     private val requestNotificationPermissionLauncher =
         registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { }
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,11 +53,18 @@ class MainActivity : ComponentActivity() {
             window.decorView
         ).isAppearanceLightNavigationBars = true
 
+        pendingTransactionId = getTransactionIdFromIntent(intent)
+
         requestNotificationPermission()
 
         setContent {
             SakuTheme {
-                NavGraph()
+                NavGraph(
+                    pendingTransactionId = pendingTransactionId,
+                    onPendingTransactionHandled = {
+                        pendingTransactionId = null
+                    }
+                )
             }
         }
     }
@@ -62,5 +82,21 @@ class MainActivity : ComponentActivity() {
                 requestNotificationPermissionLauncher.launch(permission)
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+
+        setIntent(intent)
+
+        pendingTransactionId = getTransactionIdFromIntent(intent)
+    }
+
+    private fun getTransactionIdFromIntent(intent: Intent?): String? {
+        if (intent?.action != NotificationHelper.ACTION_OPEN_TRANSACTION_DETAIL) {
+            return null
+        }
+
+        return intent.getStringExtra(NotificationHelper.EXTRA_TRANSACTION_ID)
     }
 }

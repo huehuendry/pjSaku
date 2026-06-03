@@ -17,6 +17,11 @@ object NotificationHelper {
 
     const val TRANSACTION_CHANNEL_ID = "transaction_channel"
 
+    const val ACTION_OPEN_TRANSACTION_DETAIL =
+        "com.hendry.saku.action.OPEN_TRANSACTION_DETAIL"
+
+    const val EXTRA_TRANSACTION_ID = "extra_transaction_id"
+
     fun createNotificationChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
@@ -59,8 +64,12 @@ object NotificationHelper {
         createNotificationChannel(context)
 
         val intent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra("transactionId", transactionId)
+            action = ACTION_OPEN_TRANSACTION_DETAIL
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP
+
+            putExtra(EXTRA_TRANSACTION_ID, transactionId)
         }
 
         val pendingIntent = PendingIntent.getActivity(
