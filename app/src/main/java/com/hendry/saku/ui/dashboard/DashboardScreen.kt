@@ -122,11 +122,11 @@ fun DashboardScreen(
             )
 
             QuickActionCard(
-                title = "Riwayat",
-                subtitle = "Lihat transaksi",
+                title = "Top Up",
+                subtitle = "Isi saldo",
                 modifier = Modifier.weight(1f),
                 onClick = {
-                    navController.navigate(Screen.History.route)
+                    // TODO: Top Up
                 }
             )
         }
@@ -185,7 +185,7 @@ fun DashboardScreen(
             Column(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                transactions.forEach { transaction ->
+                transactions.take(3).forEach { transaction ->
 
                     Card(
                         modifier = Modifier
