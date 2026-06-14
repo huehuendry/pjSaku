@@ -1,13 +1,20 @@
 package com.hendry.saku.data.repository
 
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.toObject
+import com.hendry.saku.data.model.SavedRecipient
+import com.hendry.saku.data.model.Transaction
 import com.hendry.saku.data.model.User
+import com.hendry.saku.data.remote.FirestoreCollection
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
-import com.google.firebase.firestore.toObject
-import com.hendry.saku.data.model.Transaction
-import com.hendry.saku.data.remote.FirestoreCollection
 
 class AuthRepository @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
@@ -108,6 +115,78 @@ class AuthRepository @Inject constructor(
         return snapshot.documents.mapNotNull { document ->
             document.toObject(Transaction::class.java)
         }
+    }
+
+    fun observeSavedRecipients(): Flow<List<SavedRecipient>> = callbackFlow {
+        val currentUserId = getCurrentUserId()
+
+        if (currentUserId.isNullOrBlank()) {
+            trySend(emptyList())
+            close()
+            return@callbackFlow
+        }
+
+        val listener = firestore
+            .collection(FirestoreCollection.USERS)
+            .document(currentUserId)
+            .collection(FirestoreCollection.SAVED_RECIPIENTS)
+            .orderBy("lastTransferAt", Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, error ->
+
+                if (error != null) {
+                    trySend(emptyList())
+                    return@addSnapshotListener
+                }
+
+                val recipients = snapshot
+                    ?.documents
+                    ?.mapNotNull { document ->
+                        document.toObject(SavedRecipient::class.java)
+                    }
+                    .orEmpty()
+
+                trySend(recipients)
+            }
+
+        awaitClose {
+            listener.remove()
+        }
+    }
+
+    suspend fun saveRecipientAfterTransfer(
+        receiverAccountNumber: String
+    ) {
+        val currentUserId = getCurrentUserId()
+            ?: throw Exception("User belum login")
+
+        val receiverQuery = firestore
+            .collection(FirestoreCollection.USERS)
+            .whereEqualTo("accountNumber", receiverAccountNumber)
+            .limit(1)
+            .get()
+            .await()
+
+        val receiverDoc = receiverQuery.documents.firstOrNull()
+            ?: throw Exception("Nomor rekening tujuan tidak ditemukan")
+
+        val recipientUid = receiverDoc.getString("uid") ?: receiverDoc.id
+        val recipientName = receiverDoc.getString("name") ?: "Pengguna Saku"
+        val recipientAccountNumber = receiverDoc.getString("accountNumber") ?: receiverAccountNumber
+
+        val savedRecipient = SavedRecipient(
+            recipientUid = recipientUid,
+            recipientName = recipientName,
+            recipientAccountNumber = recipientAccountNumber,
+            lastTransferAt = Timestamp.now()
+        )
+
+        firestore
+            .collection(FirestoreCollection.USERS)
+            .document(currentUserId)
+            .collection(FirestoreCollection.SAVED_RECIPIENTS)
+            .document(recipientAccountNumber)
+            .set(savedRecipient, SetOptions.merge())
+            .await()
     }
 
     suspend fun transferMoney(
