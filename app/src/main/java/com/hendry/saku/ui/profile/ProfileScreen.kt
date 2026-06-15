@@ -220,6 +220,17 @@ fun ProfileScreen(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f)
                 )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedButton(
+                    onClick = {
+                        navController.navigate(Screen.PrivacyPolicy.route)
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Kebijakan Privasi")
+                }
             }
         }
 
