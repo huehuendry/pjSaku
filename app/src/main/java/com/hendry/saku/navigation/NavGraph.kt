@@ -37,6 +37,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.LaunchedEffect
+import com.hendry.saku.ui.topup.TopUpScreen
 
 @Composable
 fun NavGraph(
@@ -113,6 +114,10 @@ fun NavGraph(
 
             composable(Screen.Profile.route) {
                 ProfileScreen(navController)
+            }
+
+            composable(Screen.TopUp.route) {
+                TopUpScreen(navController)
             }
 
             composable(Screen.Receipt.route) { backStackEntry ->

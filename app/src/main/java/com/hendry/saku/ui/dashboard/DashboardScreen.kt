@@ -126,7 +126,7 @@ fun DashboardScreen(
                 subtitle = "Isi saldo",
                 modifier = Modifier.weight(1f),
                 onClick = {
-                    // TODO: Top Up
+                    navController.navigate(Screen.TopUp.route)
                 }
             )
         }

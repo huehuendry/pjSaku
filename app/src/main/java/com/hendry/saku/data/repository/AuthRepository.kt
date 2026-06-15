@@ -277,6 +277,58 @@ class AuthRepository @Inject constructor(
         return senderTransactionRef.id
     }
 
+    suspend fun topUpBalance(
+        amount: Long
+    ): String {
+
+        val uid = getCurrentUserId()
+            ?: throw Exception("User belum login")
+
+        val userRef = firestore
+            .collection(FirestoreCollection.USERS)
+            .document(uid)
+
+        val topUpTransactionRef =
+            firestore.collection(FirestoreCollection.TRANSACTIONS).document()
+
+        firestore.runTransaction { transaction ->
+
+            val userSnapshot = transaction.get(userRef)
+
+            val currentBalance =
+                userSnapshot.getLong("balance") ?: 0L
+
+            val accountNumber =
+                userSnapshot.getString("accountNumber") ?: "-"
+
+            transaction.update(
+                userRef,
+                "balance",
+                currentBalance + amount
+            )
+
+            val topUpTransaction = Transaction(
+                id = topUpTransactionRef.id,
+                userId = uid,
+                type = "TOP_UP",
+                title = "Top Up",
+                description = "Isi saldo Saku",
+                amount = amount,
+                senderAccountNumber = "-",
+                receiverAccountNumber = accountNumber,
+                note = "Top up saldo",
+                createdAt = System.currentTimeMillis()
+            )
+
+            transaction.set(
+                topUpTransactionRef,
+                topUpTransaction
+            )
+        }.await()
+
+        return topUpTransactionRef.id
+    }
+
     suspend fun getAllTransactions(): List<Transaction> {
 
         val uid = getCurrentUserId() ?: return emptyList()

@@ -16,6 +16,8 @@ sealed class Screen(val route: String) {
 
     data object Profile : Screen("profile")
 
+    data object TopUp : Screen("top_up")
+
     data object Receipt :
         Screen("receipt/{transactionId}") {
 
