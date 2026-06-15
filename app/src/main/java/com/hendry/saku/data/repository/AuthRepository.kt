@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
+import com.google.firebase.auth.EmailAuthProvider
 
 class AuthRepository @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
@@ -367,5 +368,64 @@ class AuthRepository @Inject constructor(
 
     fun logout() {
         firebaseAuth.signOut()
+    }
+
+    suspend fun deleteAccount(
+        password: String
+    ) {
+        val currentUser = firebaseAuth.currentUser
+            ?: throw Exception("User belum login")
+
+        val uid = currentUser.uid
+        val email = currentUser.email
+            ?: throw Exception("Email user tidak ditemukan")
+
+        if (password.isBlank()) {
+            throw Exception("Password tidak boleh kosong")
+        }
+
+        val credential = EmailAuthProvider.getCredential(
+            email,
+            password
+        )
+
+        currentUser
+            .reauthenticate(credential)
+            .await()
+
+        val transactionsSnapshot = firestore
+            .collection(FirestoreCollection.TRANSACTIONS)
+            .whereEqualTo("userId", uid)
+            .get()
+            .await()
+
+        val savedRecipientsSnapshot = firestore
+            .collection(FirestoreCollection.USERS)
+            .document(uid)
+            .collection(FirestoreCollection.SAVED_RECIPIENTS)
+            .get()
+            .await()
+
+        val batch = firestore.batch()
+
+        transactionsSnapshot.documents.forEach { document ->
+            batch.delete(document.reference)
+        }
+
+        savedRecipientsSnapshot.documents.forEach { document ->
+            batch.delete(document.reference)
+        }
+
+        val userRef = firestore
+            .collection(FirestoreCollection.USERS)
+            .document(uid)
+
+        batch.delete(userRef)
+
+        batch.commit().await()
+
+        currentUser
+            .delete()
+            .await()
     }
 }

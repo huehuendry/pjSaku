@@ -13,7 +13,8 @@ import javax.inject.Inject
 data class ProfileUiState(
     val isLoading: Boolean = false,
     val user: User? = null,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val isAccountDeleted: Boolean = false
 )
 
 @HiltViewModel
@@ -31,11 +32,15 @@ class ProfileViewModel @Inject constructor(
     private fun getProfile() {
         viewModelScope.launch {
             try {
-                _uiState.value = ProfileUiState(isLoading = true)
+                _uiState.value = ProfileUiState(
+                    isLoading = true
+                )
 
                 val user = repository.getCurrentUserProfile()
 
-                _uiState.value = ProfileUiState(user = user)
+                _uiState.value = ProfileUiState(
+                    user = user
+                )
 
             } catch (e: Exception) {
                 _uiState.value = ProfileUiState(
@@ -43,6 +48,48 @@ class ProfileViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    fun deleteAccount(
+        password: String
+    ) {
+        viewModelScope.launch {
+            try {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = true,
+                    errorMessage = null
+                )
+
+                repository.deleteAccount(
+                    password = password
+                )
+
+                _uiState.value = ProfileUiState(
+                    isAccountDeleted = true
+                )
+
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = when {
+                        e.message?.contains("password is invalid", ignoreCase = true) == true ->
+                            "Password yang kamu masukkan salah"
+
+                        e.message?.contains("requires recent login", ignoreCase = true) == true ->
+                            "Sesi login sudah terlalu lama. Silakan logout dan login ulang, lalu coba lagi"
+
+                        else ->
+                            e.message ?: "Gagal menghapus akun"
+                    }
+                )
+            }
+        }
+    }
+
+    fun clearErrorMessage() {
+        _uiState.value = _uiState.value.copy(
+            errorMessage = null
+        )
     }
 
     fun logout() {
