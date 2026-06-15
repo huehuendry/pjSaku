@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -81,7 +82,12 @@ fun HistoryScreen(
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(uiState.transactions) { transaction ->
+                    items(
+                        items = uiState.transactions,
+                        key = { transaction ->
+                            transaction.id
+                        }
+                    ) { transaction ->
 
                         TransactionHistoryItem(
                             transaction = transaction,
@@ -105,7 +111,7 @@ private fun TransactionHistoryItem(
     transaction: Transaction,
     onClick: () -> Unit
 ) {
-    val isIncome = transaction.type == "TRANSFER_IN"
+    val isIncome = transaction.isIncomeTransaction()
 
     val amountColor = if (isIncome) {
         Color(0xFF16A34A)
@@ -147,14 +153,15 @@ private fun TransactionHistoryItem(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = transaction.title,
-                        style = MaterialTheme.typography.titleSmall
+                        text = transaction.getDisplayTitle(),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold
                     )
 
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
-                        text = transaction.description,
+                        text = transaction.getDisplayDescription(),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
                     )
@@ -163,6 +170,7 @@ private fun TransactionHistoryItem(
                 Text(
                     text = amountPrefix + transaction.amount.toRupiah(),
                     style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
                     color = amountColor
                 )
             }
@@ -203,5 +211,25 @@ private fun EmptyHistoryCard() {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+}
+
+private fun Transaction.isIncomeTransaction(): Boolean {
+    return type == "TRANSFER_IN" || type == "TOP_UP"
+}
+
+private fun Transaction.getDisplayTitle(): String {
+    return when (type) {
+        "TOP_UP" -> "Top Up"
+        "TRANSFER_IN" -> "Transfer Masuk"
+        "TRANSFER_OUT" -> "Transfer Keluar"
+        else -> title
+    }
+}
+
+private fun Transaction.getDisplayDescription(): String {
+    return when (type) {
+        "TOP_UP" -> "Isi saldo Saku"
+        else -> description
     }
 }

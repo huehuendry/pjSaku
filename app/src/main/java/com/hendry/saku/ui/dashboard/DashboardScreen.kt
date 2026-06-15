@@ -3,6 +3,7 @@ package com.hendry.saku.ui.dashboard
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,15 +25,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.hendry.saku.data.model.Transaction
 import com.hendry.saku.navigation.Screen
 import com.hendry.saku.utils.format.toRupiah
-import androidx.compose.foundation.layout.Box
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-
+import androidx.compose.runtime.LaunchedEffect
 
 @Composable
 fun DashboardScreen(
@@ -40,6 +42,11 @@ fun DashboardScreen(
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadDashboardData()
+    }
+
     val user = uiState.user
     val transactions = uiState.transactions
 
@@ -157,79 +164,27 @@ fun DashboardScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         if (transactions.isEmpty()) {
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        text = "Belum ada transaksi",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Text(
-                        text = "Riwayat transaksi akan muncul di sini",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
-                    )
-                }
-            }
-
+            EmptyRecentTransactionCard()
         } else {
-
             Column(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 transactions.take(3).forEach { transaction ->
-
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                navController.navigate(
-                                    Screen.TransactionDetail.createRoute(
-                                        transaction.id
-                                    )
+                    DashboardTransactionItem(
+                        transaction = transaction,
+                        onClick = {
+                            navController.navigate(
+                                Screen.TransactionDetail.createRoute(
+                                    transaction.id
                                 )
-                            },
-                        shape = RoundedCornerShape(16.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp)
-                        ) {
-                            Text(
-                                text = transaction.title,
-                                style = MaterialTheme.typography.titleSmall
-                            )
-
-                            Spacer(modifier = Modifier.height(4.dp))
-
-                            Text(
-                                text = transaction.description,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
-                            )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            Text(
-                                text = transaction.amount.toRupiah(),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary
                             )
                         }
-                    }
+                    )
                 }
             }
         }
 
         Spacer(modifier = Modifier.height(28.dp))
-
     }
 }
 
@@ -264,7 +219,6 @@ private fun BalanceCard(
                 .padding(24.dp)
         ) {
             Column {
-
                 Text(
                     text = "Saldo Utama",
                     color = Color.White.copy(alpha = 0.85f),
@@ -334,3 +288,119 @@ private fun QuickActionCard(
     }
 }
 
+@Composable
+private fun DashboardTransactionItem(
+    transaction: Transaction,
+    onClick: () -> Unit
+) {
+    val isIncome = transaction.isIncomeTransaction()
+
+    val amountColor = if (isIncome) {
+        Color(0xFF16A34A)
+    } else {
+        Color(0xFFDC2626)
+    }
+
+    val amountPrefix = if (isIncome) {
+        "+ "
+    } else {
+        "- "
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                onClick()
+            },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 1.dp
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top
+        ) {
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = transaction.getDashboardTitle(),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = transaction.getDashboardDescription(),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
+                )
+            }
+
+            Text(
+                text = amountPrefix + transaction.amount.toRupiah(),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = amountColor
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmptyRecentTransactionCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "Belum ada transaksi",
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "Riwayat transaksi akan muncul di sini",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
+            )
+        }
+    }
+}
+
+private fun Transaction.isIncomeTransaction(): Boolean {
+    return type == "TRANSFER_IN" || type == "TOP_UP"
+}
+
+private fun Transaction.getDashboardTitle(): String {
+    return when (type) {
+        "TOP_UP" -> "Top Up"
+        "TRANSFER_IN" -> "Transfer Masuk"
+        "TRANSFER_OUT" -> "Transfer Keluar"
+        else -> title
+    }
+}
+
+private fun Transaction.getDashboardDescription(): String {
+    return when (type) {
+        "TOP_UP" -> "Isi saldo Saku"
+        else -> description
+    }
+}

@@ -2,6 +2,7 @@ package com.hendry.saku.ui.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hendry.saku.data.model.Transaction
 import com.hendry.saku.data.model.User
 import com.hendry.saku.data.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -9,7 +10,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.hendry.saku.data.model.Transaction
 
 data class DashboardUiState(
     val isLoading: Boolean = false,
@@ -23,43 +23,36 @@ class DashboardViewModel @Inject constructor(
     private val repository: AuthRepository
 ) : ViewModel() {
 
-    private val _uiState =
-        MutableStateFlow(DashboardUiState())
-
-    val uiState =
-        _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(DashboardUiState())
+    val uiState = _uiState.asStateFlow()
 
     init {
-        getUserProfile()
+        loadDashboardData()
     }
 
-    private fun getUserProfile() {
-
+    fun loadDashboardData() {
         viewModelScope.launch {
             try {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = true,
+                    errorMessage = null
+                )
 
-                _uiState.value =
-                    DashboardUiState(
-                        isLoading = true
-                    )
-
-                val user =
-                    repository.getCurrentUserProfile()
-                val transactions =
-                    repository.getRecentTransactions()
+                val user = repository.getCurrentUserProfile()
+                val transactions = repository.getRecentTransactions()
 
                 _uiState.value = DashboardUiState(
+                    isLoading = false,
                     user = user,
-                    transactions = transactions
+                    transactions = transactions,
+                    errorMessage = null
                 )
 
             } catch (e: Exception) {
-
-                _uiState.value =
-                    DashboardUiState(
-                        errorMessage =
-                        e.message
-                    )
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = e.message ?: "Gagal mengambil data dashboard"
+                )
             }
         }
     }

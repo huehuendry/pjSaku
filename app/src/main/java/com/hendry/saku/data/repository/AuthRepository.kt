@@ -108,13 +108,17 @@ class AuthRepository @Inject constructor(
         val snapshot = firestore
             .collection(FirestoreCollection.TRANSACTIONS)
             .whereEqualTo("userId", uid)
-            .limit(5)
             .get()
             .await()
 
-        return snapshot.documents.mapNotNull { document ->
-            document.toObject(Transaction::class.java)
-        }
+        return snapshot.documents
+            .mapNotNull { document ->
+                document.toObject(Transaction::class.java)
+            }
+            .sortedByDescending { transaction ->
+                transaction.createdAt
+            }
+            .take(3)
     }
 
     fun observeSavedRecipients(): Flow<List<SavedRecipient>> = callbackFlow {
