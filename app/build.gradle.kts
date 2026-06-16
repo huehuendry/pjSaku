@@ -9,12 +9,12 @@ plugins {
 
 android {
     namespace = "com.hendry.saku"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.hendry.saku"
         minSdk = 32
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
