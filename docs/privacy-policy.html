@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kebijakan Privasi - Saku</title>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          line-height: 1.7;
+          margin: 0;
+          padding: 0;
+          background: #f8fafc;
+          color: #0f172a;
+        }
+
+        .container {
+          max-width: 860px;
+          margin: 0 auto;
+          padding: 32px 20px;
+          background: #ffffff;
+          min-height: 100vh;
+        }
+
+        h1, h2 {
+          color: #0f172a;
+        }
+
+        h1 {
+          margin-bottom: 4px;
+        }
+
+        .updated {
+          color: #64748b;
+          margin-bottom: 32px;
+        }
+
+        .note {
+          background: #ecfdf5;
+          border-left: 4px solid #10b981;
+          padding: 14px 16px;
+          border-radius: 8px;
+          margin: 20px 0;
+        }
+
+        a {
+          color: #2563eb;
+        }
+
+        ul {
+          padding-left: 22px;
+        }
+
+        footer {
+          margin-top: 40px;
+          color: #64748b;
+          font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<main class="container">
+    <h1>Kebijakan Privasi Saku</h1>
+    <p class="updated">Terakhir diperbarui: Juni 2026</p>
+
+    <div class="note">
+        <strong>Catatan:</strong> Saku adalah aplikasi simulasi mobile banking untuk tujuan pembelajaran dan portfolio. Aplikasi ini bukan layanan keuangan nyata.
+    </div>
+
+    <h2>1. Tentang Aplikasi</h2>
+    <p>
+        Saku adalah aplikasi simulasi mobile banking berbasis Android. Seluruh saldo, nomor rekening, transaksi, transfer, top up, dan aktivitas lain di dalam aplikasi bersifat simulasi dan tidak merepresentasikan uang asli, rekening bank asli, atau layanan keuangan resmi.
+    </p>
+
+    <h2>2. Data yang Dikumpulkan dan Disimpan</h2>
+    <p>Aplikasi dapat menyimpan data berikut untuk menjalankan fitur aplikasi:</p>
+    <ul>
+        <li>Nama pengguna</li>
+        <li>Email pengguna</li>
+        <li>UID akun Firebase</li>
+        <li>Nomor rekening simulasi</li>
+        <li>Saldo simulasi</li>
+        <li>Riwayat transaksi simulasi</li>
+        <li>Rekening tujuan tersimpan</li>
+        <li>Firebase Cloud Messaging token untuk kebutuhan notifikasi</li>
+        <li>Waktu pembuatan atau pembaruan data tertentu</li>
+    </ul>
+
+    <h2>3. Penggunaan Data</h2>
+    <p>Data digunakan untuk:</p>
+    <ul>
+        <li>Membuat dan mengelola akun pengguna</li>
+        <li>Menampilkan profil pengguna</li>
+        <li>Menampilkan saldo simulasi</li>
+        <li>Memproses transfer simulasi antar akun Saku</li>
+        <li>Memproses top up saldo simulasi</li>
+        <li>Menampilkan riwayat dan detail transaksi</li>
+        <li>Menyimpan rekening tujuan yang pernah digunakan</li>
+        <li>Mendukung fitur notifikasi aplikasi</li>
+    </ul>
+
+    <h2>4. Penyimpanan Data</h2>
+    <p>
+        Saku menggunakan Firebase Authentication untuk autentikasi akun dan Cloud Firestore untuk menyimpan data aplikasi seperti profil, saldo simulasi, riwayat transaksi, dan rekening tersimpan.
+    </p>
+
+    <h2>5. Pembagian Data kepada Pihak Ketiga</h2>
+    <p>
+        Saku tidak menjual data pengguna kepada pihak ketiga. Data dapat diproses melalui layanan Firebase dari Google untuk mendukung autentikasi, database, dan notifikasi aplikasi.
+    </p>
+
+    <h2>6. Notifikasi</h2>
+    <p>
+        Aplikasi dapat menyimpan token Firebase Cloud Messaging untuk kebutuhan notifikasi. Aplikasi juga dapat menampilkan notifikasi lokal setelah transaksi tertentu berhasil dilakukan.
+    </p>
+
+    <h2>7. Hapus Akun dan Data</h2>
+    <p>
+        Pengguna dapat menghapus akun melalui aplikasi pada menu <strong>Profile &gt; Hapus Akun</strong>. Setelah akun dihapus, data profil, riwayat transaksi milik pengguna, rekening tersimpan, dan akun Firebase Authentication akan dihapus dari sistem aplikasi.
+    </p>
+    <p>
+        Informasi lebih lanjut dapat dibaca di halaman:
+        <a href="delete-account.html">Panduan Penghapusan Akun dan Data</a>.
+    </p>
+
+    <h2>8. Keamanan</h2>
+    <p>
+        Saku menggunakan Firebase Authentication dan Firestore Security Rules untuk membantu membatasi akses data. Namun, aplikasi ini tetap merupakan aplikasi simulasi dan portfolio, bukan sistem finansial production.
+    </p>
+
+    <h2>9. Bukan Layanan Keuangan</h2>
+    <p>
+        Saku bukan aplikasi bank, dompet digital, pinjaman, investasi, pembayaran, atau layanan keuangan resmi. Aplikasi ini tidak terhubung dengan bank, payment gateway, atau institusi keuangan mana pun.
+    </p>
+
+    <h2>10. Kontak</h2>
+    <p>
+        Untuk pertanyaan terkait privasi atau penghapusan data, hubungi:
+        <a href="mailto:hendrysetiawan97@gmail.com">hendrysetiawan97@gmail.com</a>
+    </p>
+
+    <footer>
+        &copy; 2026 Saku. All rights reserved.
+    </footer>
+</main>
+</body>
+</html>
