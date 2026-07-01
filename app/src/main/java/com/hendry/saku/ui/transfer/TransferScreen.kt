@@ -48,6 +48,8 @@ import com.hendry.saku.data.model.SavedRecipient
 import com.hendry.saku.navigation.Screen
 import com.hendry.saku.notification.NotificationHelper
 import com.hendry.saku.utils.format.toRupiah
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 
 @Composable
 fun TransferScreen(
@@ -58,6 +60,9 @@ fun TransferScreen(
     var amount by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
 
+    var showTransferConfirmationDialog by remember {
+        mutableStateOf(false)
+    }
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
@@ -83,6 +88,29 @@ fun TransferScreen(
 
             viewModel.resetState()
         }
+    }
+
+    if (showTransferConfirmationDialog) {
+        TransferConfirmationDialog(
+            accountNumber = accountNumber,
+            amount = amount,
+            note = note,
+            isLoading = uiState.isLoading,
+            onDismiss = {
+                if (!uiState.isLoading) {
+                    showTransferConfirmationDialog = false
+                }
+            },
+            onConfirm = {
+                showTransferConfirmationDialog = false
+
+                viewModel.transfer(
+                    accountNumber = accountNumber,
+                    amountText = amount,
+                    note = note
+                )
+            }
+        )
     }
 
     Column(
@@ -200,11 +228,17 @@ fun TransferScreen(
 
         Button(
             onClick = {
-                viewModel.transfer(
-                    accountNumber = accountNumber,
-                    amountText = amount,
-                    note = note
-                )
+                val transferAmount = amount.toLongOrNull()
+
+                if (accountNumber.isBlank() || transferAmount == null || transferAmount <= 0L) {
+                    viewModel.transfer(
+                        accountNumber = accountNumber,
+                        amountText = amount,
+                        note = note
+                    )
+                } else {
+                    showTransferConfirmationDialog = true
+                }
             },
             modifier = Modifier.fillMaxWidth(),
             enabled = !uiState.isLoading
@@ -290,6 +324,7 @@ private fun SavedRecipientCard(
             defaultElevation = 2.dp
         )
     ) {
+
         Column(
             modifier = Modifier.padding(14.dp)
         ) {
@@ -327,6 +362,98 @@ private fun SavedRecipientCard(
                 overflow = TextOverflow.Ellipsis
             )
         }
+    }
+}
+
+@Composable
+private fun TransferConfirmationDialog(
+    accountNumber: String,
+    amount: String,
+    note: String,
+    isLoading: Boolean,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text("Konfirmasi Transfer")
+        },
+        text = {
+            Column {
+                Text(
+                    text = "Pastikan detail transfer sudah benar sebelum melanjutkan.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                ConfirmationRow(
+                    label = "Rekening Tujuan",
+                    value = accountNumber
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                ConfirmationRow(
+                    label = "Nominal",
+                    value = amount.toLongOrNull()?.toRupiah() ?: "Rp0"
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                ConfirmationRow(
+                    label = "Catatan",
+                    value = note.ifBlank { "-" }
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                enabled = !isLoading
+            ) {
+                Text(
+                    text = if (isLoading) {
+                        "Memproses..."
+                    } else {
+                        "Konfirmasi"
+                    }
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+                enabled = !isLoading
+            ) {
+                Text("Batal")
+            }
+        }
+    )
+}
+
+@Composable
+private fun ConfirmationRow(
+    label: String,
+    value: String
+) {
+    Column {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+        )
+
+        Spacer(modifier = Modifier.height(2.dp))
+
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
     }
 }
 

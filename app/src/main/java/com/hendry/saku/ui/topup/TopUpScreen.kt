@@ -37,6 +37,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.hendry.saku.navigation.Screen
 import com.hendry.saku.utils.format.toRupiah
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.text.font.FontWeight
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -46,6 +49,10 @@ fun TopUpScreen(
 ) {
     var amount by remember {
         mutableStateOf("")
+    }
+
+    var showTopUpConfirmationDialog by remember {
+        mutableStateOf(false)
     }
 
     val uiState by viewModel.uiState.collectAsState()
@@ -76,6 +83,25 @@ fun TopUpScreen(
         500_000L,
         1_000_000L
     )
+
+    if (showTopUpConfirmationDialog) {
+        TopUpConfirmationDialog(
+            amount = amount,
+            isLoading = uiState.isLoading,
+            onDismiss = {
+                if (!uiState.isLoading) {
+                    showTopUpConfirmationDialog = false
+                }
+            },
+            onConfirm = {
+                showTopUpConfirmationDialog = false
+
+                viewModel.topUp(
+                    amountText = amount
+                )
+            }
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -206,9 +232,15 @@ fun TopUpScreen(
 
         Button(
             onClick = {
-                viewModel.topUp(
-                    amountText = amount
-                )
+                val topUpAmount = amount.toLongOrNull()
+
+                if (topUpAmount == null || topUpAmount < 10_000L) {
+                    viewModel.topUp(
+                        amountText = amount
+                    )
+                } else {
+                    showTopUpConfirmationDialog = true
+                }
             },
             modifier = Modifier.fillMaxWidth(),
             enabled = !uiState.isLoading
@@ -236,4 +268,76 @@ fun TopUpScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
     }
+
+}
+
+@Composable
+private fun TopUpConfirmationDialog(
+    amount: String,
+    isLoading: Boolean,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text("Konfirmasi Top Up")
+        },
+        text = {
+            Column {
+                Text(
+                    text = "Pastikan nominal top up sudah benar sebelum melanjutkan.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "Nominal Top Up",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
+
+                Spacer(modifier = Modifier.height(2.dp))
+
+                Text(
+                    text = amount.toLongOrNull()?.toRupiah() ?: "Rp0",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = "Saldo ini hanya simulasi dan bukan uang asli.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                enabled = !isLoading
+            ) {
+                Text(
+                    text = if (isLoading) {
+                        "Memproses..."
+                    } else {
+                        "Konfirmasi"
+                    }
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+                enabled = !isLoading
+            ) {
+                Text("Batal")
+            }
+        }
+    )
 }
