@@ -7,19 +7,30 @@ This project was developed to explore modern Android development practices such 
 
 - User Authentication (Login & Register)
 - Auto Login Session
-- Dashboard with Real-Time User Data
+- Dashboard with User Data
 - Balance Management
 - Auto Generated Account Number
 - Money Transfer Between Users
+- Saved Recipient / Saved Account Number
+- Top Up Simulation
 - Transaction History
 - Transaction Detail Screen
 - Transfer Receipt Screen
+- Top Up Receipt Support
+- Profile Screen
+- Privacy Policy Screen
+- Delete Account Flow
+- Local Notification After Transfer
+- Open Transaction Detail from Notification
 - Firebase Firestore Integration
+- Firebase Cloud Messaging Token Sync
+- Firestore Security Rules
 - Modern UI with Jetpack Compose
 - MVVM Architecture
 - Repository Pattern
 - Hilt Dependency Injection
 - Unit Testing
+- Compose UI Testing
 
 ## Tech Stack
 
