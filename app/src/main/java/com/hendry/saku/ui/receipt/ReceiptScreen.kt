@@ -1,5 +1,6 @@
 package com.hendry.saku.ui.receipt
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -44,6 +47,7 @@ fun ReceiptScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val transaction = uiState.transaction
+    val context = LocalContext.current
 
     LaunchedEffect(transactionId) {
         viewModel.getTransactionDetail(transactionId)
@@ -92,7 +96,37 @@ fun ReceiptScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        if (
+            transaction != null &&
+            !uiState.isLoading &&
+            uiState.errorMessage == null
+        ) {
+            Spacer(modifier = Modifier.height(24.dp))
+
+            OutlinedButton(
+                onClick = {
+                    val shareText = buildReceiptShareText(transaction)
+
+                    val sendIntent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_TEXT, shareText)
+                        type = "text/plain"
+                    }
+
+                    val shareIntent = Intent.createChooser(
+                        sendIntent,
+                        "Bagikan Bukti Transaksi"
+                    )
+
+                    context.startActivity(shareIntent)
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Bagikan Bukti")
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         Button(
             onClick = {
@@ -315,6 +349,45 @@ private fun ReceiptDivider() {
         modifier = Modifier.padding(vertical = 14.dp),
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
     )
+}
+
+private fun buildReceiptShareText(transaction: Transaction): String {
+    val amountPrefix = if (transaction.isIncomeTransaction()) {
+        "+ "
+    } else {
+        "- "
+    }
+
+    return buildString {
+        appendLine("Bukti Transaksi Saku")
+        appendLine()
+        appendLine("Status: Berhasil")
+        appendLine("Jenis Transaksi: ${transaction.getDisplayTransactionType()}")
+        appendLine("Nominal: $amountPrefix${transaction.amount.toRupiah()}")
+        appendLine("Tanggal: ${transaction.createdAt.toReadableDate()}")
+
+        when (transaction.type) {
+            "TOP_UP" -> {
+                appendLine("Keterangan: ${transaction.description.ifBlank { "Isi saldo Saku" }}")
+                appendLine("Masuk ke Rekening: ${transaction.receiverAccountNumber.ifBlank { "-" }}")
+            }
+
+            else -> {
+                appendLine("Rekening Pengirim: ${transaction.senderAccountNumber.ifBlank { "-" }}")
+                appendLine("Rekening Tujuan: ${transaction.receiverAccountNumber.ifBlank { "-" }}")
+                appendLine("Catatan: ${transaction.note.ifBlank { "-" }}")
+                appendLine("Deskripsi: ${transaction.description.ifBlank { "-" }}")
+            }
+        }
+
+        if (transaction.id.isNotBlank()) {
+            appendLine("ID Transaksi: ${transaction.id}")
+        }
+
+        appendLine()
+        appendLine("Saku adalah aplikasi simulasi mobile banking.")
+        appendLine("Transaksi ini bukan transaksi uang asli.")
+    }
 }
 
 private fun Transaction.isIncomeTransaction(): Boolean {
