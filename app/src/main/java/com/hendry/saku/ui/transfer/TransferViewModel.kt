@@ -126,4 +126,20 @@ class TransferViewModel @Inject constructor(
             )
         }
     }
+
+    fun deleteSavedRecipient(recipientAccountNumber: String) {
+        viewModelScope.launch {
+            try {
+                repository.deleteSavedRecipient(
+                    recipientAccountNumber = recipientAccountNumber
+                )
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        errorMessage = e.message ?: "Gagal menghapus rekening tersimpan"
+                    )
+                }
+            }
+        }
+    }
 }

@@ -1,6 +1,7 @@
 package com.hendry.saku.ui.transfer
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,12 +19,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -48,8 +51,6 @@ import com.hendry.saku.data.model.SavedRecipient
 import com.hendry.saku.navigation.Screen
 import com.hendry.saku.notification.NotificationHelper
 import com.hendry.saku.utils.format.toRupiah
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.TextButton
 
 @Composable
 fun TransferScreen(
@@ -63,6 +64,11 @@ fun TransferScreen(
     var showTransferConfirmationDialog by remember {
         mutableStateOf(false)
     }
+
+    var selectedRecipientToDelete by remember {
+        mutableStateOf<SavedRecipient?>(null)
+    }
+
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
@@ -113,6 +119,22 @@ fun TransferScreen(
         )
     }
 
+    selectedRecipientToDelete?.let { recipient ->
+        DeleteSavedRecipientDialog(
+            recipient = recipient,
+            onDismiss = {
+                selectedRecipientToDelete = null
+            },
+            onConfirm = {
+                viewModel.deleteSavedRecipient(
+                    recipientAccountNumber = recipient.recipientAccountNumber
+                )
+
+                selectedRecipientToDelete = null
+            }
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -120,7 +142,6 @@ fun TransferScreen(
             .background(MaterialTheme.colorScheme.background)
             .padding(24.dp)
     ) {
-
         Text(
             text = "Transfer",
             style = MaterialTheme.typography.headlineMedium
@@ -141,6 +162,9 @@ fun TransferScreen(
                 savedRecipients = uiState.savedRecipients,
                 onRecipientClick = { savedRecipient ->
                     accountNumber = savedRecipient.recipientAccountNumber
+                },
+                onRecipientDeleteClick = { savedRecipient ->
+                    selectedRecipientToDelete = savedRecipient
                 }
             )
 
@@ -160,7 +184,6 @@ fun TransferScreen(
             Column(
                 modifier = Modifier.padding(20.dp)
             ) {
-
                 Text(
                     text = "Informasi Transfer",
                     style = MaterialTheme.typography.titleMedium
@@ -271,7 +294,8 @@ fun TransferScreen(
 @Composable
 private fun SavedRecipientsSection(
     savedRecipients: List<SavedRecipient>,
-    onRecipientClick: (SavedRecipient) -> Unit
+    onRecipientClick: (SavedRecipient) -> Unit,
+    onRecipientDeleteClick: (SavedRecipient) -> Unit
 ) {
     Column {
         Text(
@@ -295,6 +319,9 @@ private fun SavedRecipientsSection(
                     savedRecipient = savedRecipient,
                     onClick = {
                         onRecipientClick(savedRecipient)
+                    },
+                    onDeleteClick = {
+                        onRecipientDeleteClick(savedRecipient)
                     }
                 )
             }
@@ -305,7 +332,8 @@ private fun SavedRecipientsSection(
 @Composable
 private fun SavedRecipientCard(
     savedRecipient: SavedRecipient,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onDeleteClick: () -> Unit
 ) {
     val initial = savedRecipient.recipientName
         .trim()
@@ -314,7 +342,6 @@ private fun SavedRecipientCard(
         .ifBlank { "?" }
 
     Card(
-        onClick = onClick,
         modifier = Modifier.width(180.dp),
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
@@ -324,45 +351,121 @@ private fun SavedRecipientCard(
             defaultElevation = 2.dp
         )
     ) {
-
         Column(
             modifier = Modifier.padding(14.dp)
         ) {
-            Box(
+            Column(
                 modifier = Modifier
-                    .size(42.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .clickable {
+                        onClick()
+                    }
             ) {
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = initial,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
                 Text(
-                    text = initial,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    fontWeight = FontWeight.Bold
+                    text = savedRecipient.recipientName.ifBlank {
+                        "Tanpa Nama"
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = savedRecipient.recipientAccountNumber,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = savedRecipient.recipientName,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = savedRecipient.recipientAccountNumber,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            TextButton(
+                onClick = onDeleteClick,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "Hapus",
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
         }
     }
+}
+
+@Composable
+private fun DeleteSavedRecipientDialog(
+    recipient: SavedRecipient,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text("Hapus Rekening Tersimpan")
+        },
+        text = {
+            Column {
+                Text(
+                    text = "Apakah kamu yakin ingin menghapus rekening ini dari daftar tersimpan?",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = recipient.recipientName.ifBlank {
+                        "Tanpa Nama"
+                    },
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = recipient.recipientAccountNumber,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm
+            ) {
+                Text("Hapus")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss
+            ) {
+                Text("Batal")
+            }
+        }
+    )
 }
 
 @Composable

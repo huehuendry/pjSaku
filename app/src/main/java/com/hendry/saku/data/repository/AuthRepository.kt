@@ -16,6 +16,8 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import com.google.firebase.auth.EmailAuthProvider
+import com.hendry.saku.data.remote.FirestoreCollection.SAVED_RECIPIENTS
+import com.hendry.saku.data.remote.FirestoreCollection.USERS
 
 class AuthRepository @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
@@ -368,6 +370,42 @@ class AuthRepository @Inject constructor(
 
     fun logout() {
         firebaseAuth.signOut()
+    }
+
+    suspend fun deleteSavedRecipient(recipientAccountNumber: String) {
+        val currentUserId = getCurrentUserId()
+            ?: throw Exception("User belum login")
+
+        if (recipientAccountNumber.isBlank()) {
+            throw Exception("Nomor rekening tidak valid")
+        }
+
+        val savedRecipientsRef = firestore
+            .collection(USERS)
+            .document(currentUserId)
+            .collection(SAVED_RECIPIENTS)
+
+        val snapshot = savedRecipientsRef
+            .whereEqualTo("recipientAccountNumber", recipientAccountNumber)
+            .get()
+            .await()
+
+        if (snapshot.isEmpty) {
+            savedRecipientsRef
+                .document(recipientAccountNumber)
+                .delete()
+                .await()
+
+            return
+        }
+
+        val batch = firestore.batch()
+
+        snapshot.documents.forEach { document ->
+            batch.delete(document.reference)
+        }
+
+        batch.commit().await()
     }
 
     suspend fun deleteAccount(
