@@ -1,7 +1,6 @@
 package com.hendry.saku
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.hendry.saku.navigation.NavGraph
@@ -16,17 +15,18 @@ import android.os.Build
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import android.content.Intent
-import androidx.activity.compose.setContent
+import android.view.MotionEvent
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.hendry.saku.navigation.NavGraph
 import com.hendry.saku.notification.NotificationHelper
-import com.hendry.saku.ui.theme.SakuTheme
-
+import com.hendry.saku.utils.SessionManager
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var sessionManager: SessionManager
 
     private var pendingTransactionId by mutableStateOf<String?>(null)
 
@@ -35,10 +35,10 @@ class MainActivity : ComponentActivity() {
             ActivityResultContracts.RequestPermission()
         ) { }
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        sessionManager.startSession()
 
         window.statusBarColor = Color.parseColor("#0F172A")
         window.navigationBarColor = Color.WHITE
@@ -67,6 +67,11 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        sessionManager.resetTimer()
+        return super.dispatchTouchEvent(ev)
     }
 
     private fun requestNotificationPermission() {

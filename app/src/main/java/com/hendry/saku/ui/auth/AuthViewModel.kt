@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import javax.inject.Inject
+import com.hendry.saku.utils.SessionManager
+import com.hendry.saku.utils.SessionState
 
 data class AuthUiState(
     val isLoading: Boolean = false,
@@ -19,11 +21,31 @@ data class AuthUiState(
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val repository: AuthRepository
+    private val repository: AuthRepository,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState = _uiState.asStateFlow()
+
+    init {
+        observeSessionTimeout()
+    }
+
+    private fun observeSessionTimeout() {
+        viewModelScope.launch {
+            sessionManager.sessionState.collect { state ->
+                if (state == SessionState.TIMEOUT) {
+                    performLogout()
+                }
+            }
+        }
+    }
+
+    fun performLogout() {
+        sessionManager.stopSession()
+        repository.logout()
+    }
 
     fun login(email: String, password: String) {
         viewModelScope.launch {
@@ -33,7 +55,6 @@ class AuthViewModel @Inject constructor(
                 Log.d("LOGIN_TEST", "Start login")
 
                 withTimeout(15000) {
-
                     repository.login(
                         email,
                         password
