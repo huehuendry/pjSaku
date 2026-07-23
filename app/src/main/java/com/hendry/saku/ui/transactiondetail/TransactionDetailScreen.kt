@@ -9,9 +9,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import android.content.Intent
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -39,6 +44,7 @@ fun TransactionDetailScreen(
     viewModel: TransactionDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
     LaunchedEffect(transactionId) {
         viewModel.getTransactionDetail(transactionId)
@@ -47,6 +53,7 @@ fun TransactionDetailScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .background(MaterialTheme.colorScheme.background)
             .padding(24.dp)
     ) {
@@ -91,7 +98,38 @@ fun TransactionDetailScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        val transaction = uiState.transaction
+        if (
+            transaction != null &&
+            !uiState.isLoading &&
+            uiState.errorMessage == null
+        ) {
+            Spacer(modifier = Modifier.height(24.dp))
+
+            OutlinedButton(
+                onClick = {
+                    val shareText = buildDetailShareText(transaction)
+
+                    val sendIntent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_TEXT, shareText)
+                        type = "text/plain"
+                    }
+
+                    val shareIntent = Intent.createChooser(
+                        sendIntent,
+                        "Bagikan Bukti Transaksi"
+                    )
+
+                    context.startActivity(shareIntent)
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Bagikan Bukti")
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         Button(
             onClick = {
@@ -342,5 +380,44 @@ private fun Transaction.getTransactionIcon(): String {
         "TRANSFER_IN" -> "↓"
         "TRANSFER_OUT" -> "↑"
         else -> "✓"
+    }
+}
+
+private fun buildDetailShareText(transaction: Transaction): String {
+    val amountPrefix = if (transaction.isIncomeTransaction()) {
+        "+ "
+    } else {
+        "- "
+    }
+
+    return buildString {
+        appendLine("Bukti Transaksi Saku")
+        appendLine()
+        appendLine("Status: Berhasil")
+        appendLine("Jenis Transaksi: ${transaction.getDisplayTransactionType()}")
+        appendLine("Nominal: $amountPrefix${transaction.amount.toRupiah()}")
+        appendLine("Tanggal: ${transaction.createdAt.toReadableDate()}")
+
+        when (transaction.type) {
+            "TOP_UP" -> {
+                appendLine("Keterangan: ${transaction.description.ifBlank { "Isi saldo Saku" }}")
+                appendLine("Masuk ke Rekening: ${transaction.receiverAccountNumber.ifBlank { "-" }}")
+            }
+
+            else -> {
+                appendLine("Rekening Pengirim: ${transaction.senderAccountNumber.ifBlank { "-" }}")
+                appendLine("Rekening Tujuan: ${transaction.receiverAccountNumber.ifBlank { "-" }}")
+                appendLine("Catatan: ${transaction.note.ifBlank { "-" }}")
+                appendLine("Deskripsi: ${transaction.description.ifBlank { "-" }}")
+            }
+        }
+
+        if (transaction.id.isNotBlank()) {
+            appendLine("ID Transaksi: ${transaction.id}")
+        }
+
+        appendLine()
+        appendLine("Saku adalah aplikasi simulasi mobile banking.")
+        appendLine("Transaksi ini bukan transaksi uang asli.")
     }
 }
