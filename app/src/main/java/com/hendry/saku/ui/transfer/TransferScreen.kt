@@ -50,6 +50,8 @@ import androidx.navigation.NavController
 import com.hendry.saku.data.model.SavedRecipient
 import com.hendry.saku.navigation.Screen
 import com.hendry.saku.notification.NotificationHelper
+import androidx.compose.ui.text.input.VisualTransformation
+import com.hendry.saku.utils.format.CurrencyVisualTransformation
 import com.hendry.saku.utils.format.toRupiah
 
 @Composable
@@ -76,7 +78,7 @@ fun TransferScreen(
         val transactionId = uiState.transactionId
 
         if (uiState.isSuccess && !transactionId.isNullOrBlank()) {
-            val amountText = amount.toLongOrNull()?.toRupiah() ?: "Rp0"
+            val amountText = amount.filter { it.isDigit() }.toLongOrNull()?.toRupiah() ?: "Rp0"
 
             NotificationHelper.showTransferSuccessNotification(
                 context = context,
@@ -205,13 +207,14 @@ fun TransferScreen(
 
                 SakuTextField(
                     value = amount,
-                    onValueChange = {
-                        amount = it
+                    onValueChange = { newValue ->
+                        amount = newValue.filter { it.isDigit() }
                     },
                     label = "Nominal Transfer",
-                    placeholder = "Contoh: 50000",
+                    placeholder = "Contoh: 50.000",
                     keyboardType = KeyboardType.Number,
-                    prefixText = "Rp "
+                    prefixText = "Rp ",
+                    visualTransformation = CurrencyVisualTransformation()
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -567,7 +570,8 @@ private fun SakuTextField(
     label: String,
     placeholder: String,
     keyboardType: KeyboardType,
-    prefixText: String? = null
+    prefixText: String? = null,
+    visualTransformation: VisualTransformation = VisualTransformation.None
 ) {
     TextField(
         value = value,
@@ -590,6 +594,7 @@ private fun SakuTextField(
             keyboardType = keyboardType
         ),
         singleLine = true,
+        visualTransformation = visualTransformation,
         colors = TextFieldDefaults.colors(
             focusedContainerColor = Color.Transparent,
             unfocusedContainerColor = Color.Transparent,

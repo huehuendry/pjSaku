@@ -3,6 +3,7 @@ package com.hendry.saku.ui.history
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,10 +11,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,7 +45,7 @@ fun HistoryScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp)
+            .padding(top = 24.dp, start = 24.dp, end = 24.dp)
     ) {
 
         Text(
@@ -57,8 +61,19 @@ fun HistoryScreen(
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.65f)
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
+        
+        TransactionFilterRow(
+            activeFilter = uiState.activeFilter,
+            onFilterSelected = { filter ->
+                viewModel.setFilter(filter)
+            }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        
         when {
             uiState.isLoading -> {
                 Text(
@@ -75,12 +90,13 @@ fun HistoryScreen(
             }
 
             uiState.transactions.isEmpty() -> {
-                EmptyHistoryCard()
+                EmptyHistoryCard(activeFilter = uiState.activeFilter)
             }
 
             else -> {
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(bottom = 24.dp)
                 ) {
                     items(
                         items = uiState.transactions,
@@ -105,6 +121,39 @@ fun HistoryScreen(
         }
     }
 }
+
+
+@Composable
+private fun TransactionFilterRow(
+    activeFilter: TransactionFilter,
+    onFilterSelected: (TransactionFilter) -> Unit
+) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = 0.dp)
+    ) {
+        items(TransactionFilter.entries) { filter ->
+            val isSelected = filter == activeFilter
+            FilterChip(
+                selected = isSelected,
+                onClick = { onFilterSelected(filter) },
+                label = {
+                    Text(
+                        text = filter.label,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                    )
+                },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                shape = RoundedCornerShape(50)
+            )
+        }
+    }
+}
+
 
 @Composable
 private fun TransactionHistoryItem(
@@ -186,8 +235,15 @@ private fun TransactionHistoryItem(
     }
 }
 
+
 @Composable
-private fun EmptyHistoryCard() {
+private fun EmptyHistoryCard(activeFilter: TransactionFilter) {
+    val message = if (activeFilter == TransactionFilter.ALL) {
+        "Riwayat transaksi kamu akan muncul di sini setelah melakukan aktivitas."
+    } else {
+        "Tidak ada transaksi untuk kategori \"${activeFilter.label}\"."
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
@@ -206,7 +262,7 @@ private fun EmptyHistoryCard() {
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = "Riwayat transaksi kamu akan muncul di sini setelah melakukan aktivitas.",
+                text = message,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -214,22 +270,23 @@ private fun EmptyHistoryCard() {
     }
 }
 
+
 private fun Transaction.isIncomeTransaction(): Boolean {
     return type == "TRANSFER_IN" || type == "TOP_UP"
 }
 
 private fun Transaction.getDisplayTitle(): String {
     return when (type) {
-        "TOP_UP" -> "Top Up"
-        "TRANSFER_IN" -> "Transfer Masuk"
+        "TOP_UP"       -> "Top Up"
+        "TRANSFER_IN"  -> "Transfer Masuk"
         "TRANSFER_OUT" -> "Transfer Keluar"
-        else -> title
+        else           -> title
     }
 }
 
 private fun Transaction.getDisplayDescription(): String {
     return when (type) {
         "TOP_UP" -> "Isi saldo Saku"
-        else -> description
+        else     -> description
     }
 }

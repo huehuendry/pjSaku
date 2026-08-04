@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.hendry.saku.navigation.Screen
+import com.hendry.saku.utils.format.CurrencyVisualTransformation
 import com.hendry.saku.utils.format.toRupiah
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
@@ -169,16 +170,14 @@ fun TopUpScreen(
 
                 OutlinedTextField(
                     value = amount,
-                    onValueChange = {
-                        amount = it.filter { char ->
-                            char.isDigit()
-                        }
+                    onValueChange = { newValue ->
+                        amount = newValue.filter { it.isDigit() }
                     },
                     label = {
                         Text("Nominal Top Up")
                     },
                     placeholder = {
-                        Text("Contoh: 50000")
+                        Text("Contoh: 50.000")
                     },
                     prefix = {
                         Text("Rp ")
@@ -188,6 +187,7 @@ fun TopUpScreen(
                         keyboardType = KeyboardType.Number
                     ),
                     singleLine = true,
+                    visualTransformation = CurrencyVisualTransformation(),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color.Transparent,
                         unfocusedContainerColor = Color.Transparent,
