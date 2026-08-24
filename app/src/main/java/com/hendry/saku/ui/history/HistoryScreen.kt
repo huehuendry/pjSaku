@@ -2,6 +2,7 @@ package com.hendry.saku.ui.history
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -10,12 +11,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +32,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.hendry.saku.data.model.Transaction
 import com.hendry.saku.navigation.Screen
 import com.hendry.saku.utils.format.toReadableDate
@@ -40,7 +45,9 @@ fun HistoryScreen(
     navController: NavController,
     viewModel: HistoryViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val activeFilter by viewModel.activeFilter.collectAsState()
+    val pagingItems: LazyPagingItems<Transaction> =
+        viewModel.transactionsPagingFlow.collectAsLazyPagingItems()
 
     Column(
         modifier = Modifier
@@ -63,9 +70,8 @@ fun HistoryScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        
         TransactionFilterRow(
-            activeFilter = uiState.activeFilter,
+            activeFilter = activeFilter,
             onFilterSelected = { filter ->
                 viewModel.setFilter(filter)
             }
@@ -73,24 +79,26 @@ fun HistoryScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        
         when {
-            uiState.isLoading -> {
-                Text(
-                    text = "Loading...",
-                    style = MaterialTheme.typography.bodyMedium
-                )
+            pagingItems.loadState.refresh is LoadState.Loading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
             }
 
-            uiState.errorMessage != null -> {
+            pagingItems.loadState.refresh is LoadState.Error -> {
+                val error = pagingItems.loadState.refresh as LoadState.Error
                 Text(
-                    text = uiState.errorMessage ?: "",
+                    text = error.error.message ?: "Gagal memuat transaksi",
                     color = MaterialTheme.colorScheme.error
                 )
             }
 
-            uiState.transactions.isEmpty() -> {
-                EmptyHistoryCard(activeFilter = uiState.activeFilter)
+            pagingItems.itemCount == 0 && pagingItems.loadState.refresh is LoadState.NotLoading -> {
+                EmptyHistoryCard(activeFilter = activeFilter)
             }
 
             else -> {
@@ -99,29 +107,55 @@ fun HistoryScreen(
                     contentPadding = PaddingValues(bottom = 24.dp)
                 ) {
                     items(
-                        items = uiState.transactions,
-                        key = { transaction ->
-                            transaction.id
+                        count = pagingItems.itemCount,
+                        key = { index ->
+                            pagingItems.peek(index)?.id ?: index
                         }
-                    ) { transaction ->
-
-                        TransactionHistoryItem(
-                            transaction = transaction,
-                            onClick = {
-                                navController.navigate(
-                                    Screen.TransactionDetail.createRoute(
-                                        transaction.id
+                    ) { index ->
+                        val transaction = pagingItems[index]
+                        if (transaction != null) {
+                            TransactionHistoryItem(
+                                transaction = transaction,
+                                onClick = {
+                                    navController.navigate(
+                                        Screen.TransactionDetail.createRoute(
+                                            transaction.id
+                                        )
                                     )
+                                }
+                            )
+                        }
+                    }
+
+                    when (val appendState = pagingItems.loadState.append) {
+                        is LoadState.Loading -> {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 16.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(modifier = Modifier.size(28.dp))
+                                }
+                            }
+                        }
+                        is LoadState.Error -> {
+                            item {
+                                Text(
+                                    text = appendState.error.message ?: "Gagal memuat lebih banyak",
+                                    color = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.padding(vertical = 8.dp)
                                 )
                             }
-                        )
+                        }
+                        else -> {}
                     }
                 }
             }
         }
     }
 }
-
 
 @Composable
 private fun TransactionFilterRow(
@@ -132,7 +166,8 @@ private fun TransactionFilterRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = PaddingValues(horizontal = 0.dp)
     ) {
-        items(TransactionFilter.entries) { filter ->
+        items(TransactionFilter.entries.size) { index ->
+            val filter = TransactionFilter.entries[index]
             val isSelected = filter == activeFilter
             FilterChip(
                 selected = isSelected,
@@ -153,7 +188,6 @@ private fun TransactionFilterRow(
         }
     }
 }
-
 
 @Composable
 private fun TransactionHistoryItem(
@@ -235,7 +269,6 @@ private fun TransactionHistoryItem(
     }
 }
 
-
 @Composable
 private fun EmptyHistoryCard(activeFilter: TransactionFilter) {
     val message = if (activeFilter == TransactionFilter.ALL) {
@@ -269,7 +302,6 @@ private fun EmptyHistoryCard(activeFilter: TransactionFilter) {
         }
     }
 }
-
 
 private fun Transaction.isIncomeTransaction(): Boolean {
     return type == "TRANSFER_IN" || type == "TOP_UP"

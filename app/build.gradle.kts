@@ -115,6 +115,9 @@ dependencies {
 
     implementation(libs.kotlinx.coroutines.play.services)
 
+    implementation(libs.paging.runtime)
+    implementation(libs.paging.compose)
+
     testImplementation(libs.junit)
     testImplementation(libs.androidx.arch.core.testing)
     testImplementation(libs.mockito.core)

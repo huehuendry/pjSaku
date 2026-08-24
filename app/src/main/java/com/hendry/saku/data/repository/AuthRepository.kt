@@ -1,5 +1,8 @@
 package com.hendry.saku.data.repository
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -9,7 +12,9 @@ import com.google.firebase.firestore.toObject
 import com.hendry.saku.data.model.SavedRecipient
 import com.hendry.saku.data.model.Transaction
 import com.hendry.saku.data.model.User
+import com.hendry.saku.data.paging.TransactionPagingSource
 import com.hendry.saku.data.remote.FirestoreCollection
+import com.hendry.saku.ui.history.TransactionFilter
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -18,6 +23,7 @@ import javax.inject.Inject
 import com.google.firebase.auth.EmailAuthProvider
 import com.hendry.saku.data.remote.FirestoreCollection.SAVED_RECIPIENTS
 import com.hendry.saku.data.remote.FirestoreCollection.USERS
+
 
 class AuthRepository @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
@@ -353,6 +359,27 @@ class AuthRepository @Inject constructor(
             .sortedByDescending { transaction ->
                 transaction.createdAt
             }
+    }
+
+    fun getTransactionsPagingFlow(filter: TransactionFilter): Flow<PagingData<Transaction>> {
+        val uid = getCurrentUserId() ?: return kotlinx.coroutines.flow.flowOf(PagingData.empty())
+
+        return Pager(
+            config = PagingConfig(
+                pageSize = 15,
+                initialLoadSize = 15,
+                prefetchDistance = 3,
+                enablePlaceholders = false
+            ),
+
+            pagingSourceFactory = {
+                TransactionPagingSource(
+                    firestore = firestore,
+                    userId = uid,
+                    filter = filter
+                )
+            }
+        ).flow
     }
 
     suspend fun getTransactionById(
