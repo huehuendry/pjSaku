@@ -15,4 +15,10 @@ object AppModule {
     fun provideAppName(): String {
         return "Saku App"
     }
+
+    @Provides
+    @Singleton
+    fun provideConnectivityObserver(@dagger.hilt.android.qualifiers.ApplicationContext context: android.content.Context): com.hendry.saku.utils.network.ConnectivityObserver {
+        return com.hendry.saku.utils.network.NetworkConnectivityObserver(context)
+    }
 }

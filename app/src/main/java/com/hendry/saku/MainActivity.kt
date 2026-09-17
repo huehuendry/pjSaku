@@ -22,11 +22,29 @@ import androidx.compose.runtime.setValue
 import com.hendry.saku.notification.NotificationHelper
 import com.hendry.saku.utils.SessionManager
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color as ComposeColor
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.hendry.saku.utils.network.ConnectivityObserver
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var sessionManager: SessionManager
+
+    @Inject
+    lateinit var connectivityObserver: ConnectivityObserver
 
     private var pendingTransactionId by mutableStateOf<String?>(null)
 
@@ -58,13 +76,36 @@ class MainActivity : ComponentActivity() {
         requestNotificationPermission()
 
         setContent {
+            val networkStatus by connectivityObserver.observe().collectAsState(
+                initial = ConnectivityObserver.Status.Available
+            )
+
             SakuTheme {
-                NavGraph(
-                    pendingTransactionId = pendingTransactionId,
-                    onPendingTransactionHandled = {
-                        pendingTransactionId = null
+                Box(modifier = Modifier.fillMaxSize()) {
+                    NavGraph(
+                        pendingTransactionId = pendingTransactionId,
+                        onPendingTransactionHandled = {
+                            pendingTransactionId = null
+                        }
+                    )
+
+                    if (networkStatus != ConnectivityObserver.Status.Available) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(ComposeColor.Red)
+                                .padding(8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Tidak Ada Koneksi Internet",
+                                color = ComposeColor.White,
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
-                )
+                }
             }
         }
     }
